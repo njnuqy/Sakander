@@ -20,7 +20,6 @@ public class DatabaseConfig {
                 return;
             }
             properties.load(input);
-
             this.url = properties.getProperty("sakander.url");
             this.username = properties.getProperty("sakander.username");
             this.password = properties.getProperty("sakander.password");
