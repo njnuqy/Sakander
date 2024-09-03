@@ -32,7 +32,6 @@ public class JdbcUtils {
             throw new RuntimeException(e);
         }finally {
             release(pstmt,conn);
-
         }
         return result;
     }
