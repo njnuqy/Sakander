@@ -31,4 +31,9 @@ class SakanderApplicationTests {
             dbPipe.where("student_id = ?",i).delete(new Student());
         }
     }
+    @Test
+    void selectTest(){
+        Student student = (Student) dbPipe.where("student_id = ?",2).select(new Student());
+        System.out.println(student);
+    }
 }

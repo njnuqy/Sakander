@@ -42,6 +42,22 @@ public class dbPipe<E> {
         System.out.println("deleteSql = " + sql);
         return JdbcUtils.excuteUpdate(sql,this.getStatement().getWhere().getParams());
     }
+    public Object select(E element){
+        judgeIfNull(element);
+        Class clazz = element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        judgeIfHasFields(element,fields);
+        String sql = getSelectSql(element);
+        return JdbcUtils.excuteSelectOne(sql, clazz, this.getStatement().getWhere().getParams());
+    }
+    private String getSelectSql(E element){
+        Class clazz = element.getClass();
+        String tableName = getTableName(clazz);
+        this.getStatement().setTableName(tableName);
+        StringBuilder selectSql = new StringBuilder();
+        selectSql.append("select * from ").append(tableName).append(" where ").append(this.getStatement().getWhere().getQuery());
+        return selectSql.toString();
+    }
     private String getDeleteSql(E element){
         Class clazz = element.getClass();
         String tableName = getTableName(clazz);
@@ -68,12 +84,12 @@ public class dbPipe<E> {
             fields[i].setAccessible(true);
             // 找到id对应的列值和名
             if(fields[i].isAnnotationPresent(Id.class)){
-                idName = fields[i].getAnnotation(Id.class).name();
-                try {
-                    params[params.length - 1] = fields[i].get(element);
-                    if(params[params.length - 1] == null) {
-                        throw new RuntimeException(element + "没有Id属性");
-                    }
+                    idName = fields[i].getAnnotation(Id.class).name();
+                    try {
+                        params[params.length - 1] = fields[i].get(element);
+                        if(params[params.length - 1] == null) {
+                            throw new RuntimeException(element + "没有Id属性");
+                        }
                 }catch (IllegalAccessException e){
                     System.out.println(e.getMessage());
                     System.out.println("获取" + element + "属性值失败");
