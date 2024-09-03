@@ -3,21 +3,25 @@ package com.sakander.model;
 import com.sakander.annotations.Column;
 import com.sakander.annotations.Id;
 import com.sakander.annotations.Table;
+import com.sakander.clause.Where;
 import com.sakander.utils.JdbcUtils;
+import lombok.Data;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-
+@Data
 public class dbPipe<E> {
+    private Statement statement;
+    public dbPipe(){
+        this.statement = new Statement();
+    }
     public int add(E element){
         judgeIfNull(element);
         Class clazz = element.getClass();
         String tableName = getTableName(clazz);
         Field[] fields = clazz.getDeclaredFields();
-        if(fields == null || fields.length == 0) {
-            throw new RuntimeException(element + "没有属性");
-        }
+        judgeIfHasFields(element,fields);
         String sql = getInsertSql(tableName,fields.length);
         Object[] params = getSqlParams(element,fields);
         System.out.println("insertSql = " + sql);
@@ -28,12 +32,29 @@ public class dbPipe<E> {
         judgeIfNull(element);
         Class clazz = element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        if(fields == null || fields.length == 0){
-            throw new RuntimeException(element + "没有属性");
-        }
+        judgeIfHasFields(element,fields);
         Object[] params = new Object[fields.length];
         String sql = getUpdateSqlAndParams(element,params);
         return JdbcUtils.excuteUpdate(sql,params);
+    }
+    public int delete(E element){
+        String sql = getDeleteSql(element);
+        System.out.println("deleteSql = " + sql);
+        return JdbcUtils.excuteUpdate(sql,this.getStatement().getWhere().getParams());
+    }
+    private String getDeleteSql(E element){
+        Class clazz = element.getClass();
+        String tableName = getTableName(clazz);
+        this.getStatement().setTableName(tableName);
+        StringBuilder deleteSql = new StringBuilder();
+        deleteSql.append("delete from ").append(tableName).append(" where ").append(this.getStatement().getWhere().getQuery());
+        return deleteSql.toString();
+    }
+    public dbPipe<E> where(String query,Object ...params){
+        Where where = this.getStatement().getWhere();
+        where.setQuery(query);
+        where.setParams(params);
+        return this;
     }
     private String getUpdateSqlAndParams(E element,Object[] params){
         Class clazz = element.getClass();
@@ -111,6 +132,11 @@ public class dbPipe<E> {
     private void judgeIfNull(E element){
         if(element == null){
             throw new IllegalArgumentException("插入的元素为空");
+        }
+    }
+    private void judgeIfHasFields(E element,Field[] fields){
+        if(fields == null || fields.length == 0){
+            throw new RuntimeException(element + "没有属性");
         }
     }
 }

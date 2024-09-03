@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = Sakander.class)
 class SakanderApplicationTests {
-    private static dbPipe<Student> dbPipe = new dbPipe<Student>();
-
+    private static dbPipe<Student> dbPipe = new dbPipe<>();
     @Test
     void addTest(){
         Student student = null;
@@ -23,6 +22,13 @@ class SakanderApplicationTests {
         for(int i = 0 ; i < 10 ; i ++){
             student = new Student(i,"new_qy" + i,i * 2);
             dbPipe.update(student);
+        }
+    }
+
+    @Test
+    void deleteTest(){
+        for(int i = 0 ; i < 10 ; i ++){
+            dbPipe.where("student_id = ?",i).delete(new Student());
         }
     }
 }
