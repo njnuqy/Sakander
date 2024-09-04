@@ -11,7 +11,6 @@ public class DatabaseConfig {
     private String url;
     private String username;
     private String password;
-
     public DatabaseConfig() throws IOException {
         Properties properties = new Properties();
         try(InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")){
@@ -27,6 +26,4 @@ public class DatabaseConfig {
             ex.printStackTrace();
         }
     }
-
-
 }

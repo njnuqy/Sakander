@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
 
 @Data
 public class dbPipe<E> {
@@ -50,6 +51,20 @@ public class dbPipe<E> {
         String sql = getSelectSql(element);
         return JdbcUtils.excuteSelectOne(sql, clazz, this.getStatement().getWhere().getParams());
     }
+    public <T> List<T> selectInBatch(E element){
+        judgeIfNull(element);
+        Class clazz = element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        judgeIfHasFields(element,fields);
+        String sql = getSelectSql(element);
+        return JdbcUtils.excuteSelectInBatch(sql, clazz, this.getStatement().getWhere().getParams());
+    }
+    public dbPipe<E> where(String query,Object ...params){
+        Where where = this.getStatement().getWhere();
+        where.setQuery(query);
+        where.setParams(params);
+        return this;
+    }
     private String getSelectSql(E element){
         Class clazz = element.getClass();
         String tableName = getTableName(clazz);
@@ -65,12 +80,6 @@ public class dbPipe<E> {
         StringBuilder deleteSql = new StringBuilder();
         deleteSql.append("delete from ").append(tableName).append(" where ").append(this.getStatement().getWhere().getQuery());
         return deleteSql.toString();
-    }
-    public dbPipe<E> where(String query,Object ...params){
-        Where where = this.getStatement().getWhere();
-        where.setQuery(query);
-        where.setParams(params);
-        return this;
     }
     private String getUpdateSqlAndParams(E element,Object[] params){
         Class clazz = element.getClass();

@@ -6,6 +6,8 @@ import com.sakander.config.DatabaseConfig;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JdbcUtils {
     public static Connection getConn(DatabaseConfig config){
@@ -59,6 +61,28 @@ public class JdbcUtils {
         }
         return result;
     }
+    public static <T> List<T> excuteSelectInBatch(String sql, Class<T> clazz, Object ...params){
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        List<T> result = new ArrayList<>();
+        try {
+            conn = getConn(new DatabaseConfig());
+            pstmt = conn.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setObject(i + 1, params[i]);
+            }
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                result.add(resultSetToObject(resultSet, clazz));
+            }
+        } catch (SQLException | IOException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } finally {
+            release(pstmt, conn);
+        }
+        return result;
+    }
     private static <T> T resultSetToObject(ResultSet rs, Class<T> clazz) throws SQLException, IllegalAccessException, InstantiationException, NoSuchFieldException {
         T obj = clazz.newInstance();
         Field[] fields = clazz.getDeclaredFields();
@@ -66,7 +90,7 @@ public class JdbcUtils {
             field.setAccessible(true);
             if(field.isAnnotationPresent(Column.class)){
                 Column column = field.getAnnotation(Column.class);
-                String columnName = column.name(); // 假设列名和属性名相同
+                String columnName = column.name();
                 Object value = rs.getObject(columnName);
                 field.set(obj, value);
             }
