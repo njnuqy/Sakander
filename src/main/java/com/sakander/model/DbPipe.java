@@ -16,7 +16,7 @@ import java.util.Map;
 public class DbPipe<E> {
     private Statement statement;
     private E element;
-    public DbPipe(){
+    private DbPipe(){
         this.statement = new Statement();
     }
     public static <E> DbPipe<E> create(E element){
