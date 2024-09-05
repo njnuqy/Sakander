@@ -1,5 +1,7 @@
 package com.sakander.model;
 
+import com.sakander.annotations.Column;
+import com.sakander.annotations.Id;
 import com.sakander.annotations.Table;
 import com.sakander.clause.Where;
 import com.sakander.utils.Utlis;
@@ -41,8 +43,14 @@ public class DbPipe<E> {
         }
         JdbcUtils.excuteUpdate(sql, params);
     }
-    public void update(E element){
+    public int update(E element){
         judgeIfNull(element);
+        Class clazz = element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        judgeIfHasFields(element,fields);
+        Object[] params = new Object[fields.length];
+        String sql = getUpdateSql(element,params);
+        return JdbcUtils.excuteUpdate(sql,params);
     }
     public void delete(E element){
         String sql = getDeleteSql(element);
@@ -110,6 +118,44 @@ public class DbPipe<E> {
         System.out.println(updateSql.toString());
         return updateSql.toString();
     }
+    public String getUpdateSql(E element,Object[] params){
+        Class clazz = element.getClass();
+        String tableName = getTableName(clazz);
+        Field[] fields = clazz.getDeclaredFields();
+        StringBuilder updateSql = new StringBuilder();
+        updateSql.append("update ").append(tableName).append(" set ");
+        String idName = "";
+        int index = 0; // 记录参数的位置
+        for(int i = 0 ; i < fields.length ; i++){
+            Field field = fields[i];
+            field.setAccessible(true);
+            // 找到id对应的列值和名
+            if(field.isAnnotationPresent(Id.class)){
+                idName = field.getAnnotation(Id.class).name();
+                try {
+                    params[params.length - 1] = field.get(element);
+                    if(params[params.length - 1] == null) {
+                        throw new RuntimeException(element + "没有Id属性");
+                    }
+                }catch (IllegalAccessException e){
+                    System.out.println(e.getMessage());
+                    System.out.println("获取" + element + "属性值失败");
+                }
+            }
+            String columnName = getColumnName(fields[i]);
+            updateSql.append(" ").append(columnName).append(" = ? ,");
+            try {
+                params[index++] = fields[i].get(element);
+            }catch (IllegalAccessException e){
+                System.out.println(e.getMessage());
+                System.out.println("获取" +  element + "的属性值失败");
+            }
+        }
+        updateSql.deleteCharAt(updateSql.length() - 1);
+        updateSql.append("where ").append(idName).append(" = ?");
+        System.out.println(updateSql.toString());
+        return updateSql.toString();
+    }
     private Object[] getSqlParams(E element,Field[] fields){
         Object[] params = new Object[fields.length];
         for(int i = 0 ; i < fields.length ; i++){
@@ -142,6 +188,13 @@ public class DbPipe<E> {
         }
         System.out.println(Utlis.toSnakeCase(clazz.getSimpleName()));
         return Utlis.toSnakeCase(clazz.getSimpleName());
+    }
+    private String getColumnName(Field field){
+        boolean isPresent = field.isAnnotationPresent(Column.class);
+        if(isPresent){
+            return field.getAnnotation(Column.class).name();
+        }
+        return Utlis.toSnakeCase(field.getName());
     }
     private void judgeIfNull(E element){
         if(element == null){

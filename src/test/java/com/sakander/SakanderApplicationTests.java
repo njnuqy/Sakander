@@ -5,6 +5,7 @@ import com.sakander.model.DbPipe;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,5 +47,11 @@ class SakanderApplicationTests {
     void selectInBatchTest(){
         List<Student> students = dbPipe.where("name = ?","qy").selectInBatch(new Student());
         students.forEach(System.out::println);
+    }
+
+    @Test
+    void updateTest(){
+        Student student = new Student(11,"qyy",123);
+        dbPipe.update(student);
     }
 }
