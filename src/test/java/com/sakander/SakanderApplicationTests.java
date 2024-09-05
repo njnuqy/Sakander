@@ -22,7 +22,6 @@ class SakanderApplicationTests {
             dbPipe.add(student);
         }
     }
-
     @Test
     void updateByParamsTest(){
         Map<String, Object> map = new HashMap<>();
@@ -49,7 +48,6 @@ class SakanderApplicationTests {
         List<Student> students = dbPipe.where("name = ?","qy").selectInBatch(new Student());
         students.forEach(System.out::println);
     }
-
     @Test
     void updateTest(){
         Student student = new Student(11,"qyy",123);
