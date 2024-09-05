@@ -33,7 +33,7 @@ public class JdbcUtils {
             }
             result = pstmt.executeUpdate();
         } catch (IOException | SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         }finally {
             release(pstmt,conn);
         }

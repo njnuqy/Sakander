@@ -1,20 +1,19 @@
 package com.sakander.model;
 
-import com.sakander.annotations.Column;
-import com.sakander.annotations.Id;
 import com.sakander.annotations.Table;
 import com.sakander.clause.Where;
+import com.sakander.utils.Utlis;
 import com.sakander.utils.JdbcUtils;
 import lombok.Data;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Data
-public class dbPipe<E> {
+public class DbPipe<E> {
     private Statement statement;
-    public dbPipe(){
+    public DbPipe(){
         this.statement = new Statement();
     }
     public int add(E element){
@@ -25,23 +24,30 @@ public class dbPipe<E> {
         judgeIfHasFields(element,fields);
         String sql = getInsertSql(tableName,fields.length);
         Object[] params = getSqlParams(element,fields);
-        System.out.println("insertSql = " + sql);
-        System.out.println(Arrays.toString(params));
         return JdbcUtils.excuteUpdate(sql,params);
     }
-    public int update(E element){
+    public void addInBatch(List<E> elements){
+        elements.forEach(this::add);
+    }
+    public void updateByParams(E element){
         judgeIfNull(element);
-        Class clazz = element.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        judgeIfHasFields(element,fields);
-        Object[] params = new Object[fields.length];
-        String sql = getUpdateSqlAndParams(element,params);
-        return JdbcUtils.excuteUpdate(sql,params);
+        Map<String, Object> setMap = this.statement.getSet().getParams();
+        Object[] setParams = setMap.values().toArray();
+        Object[] params = Utlis.mergeArrays(setParams,this.statement.getWhere().getParams());
+        String sql = getUpdateByParamsSql(element);
+        System.out.println(sql);
+        for (Object param : setParams){
+            System.out.println(param);
+        }
+        JdbcUtils.excuteUpdate(sql, params);
     }
-    public int delete(E element){
+    public void update(E element){
+        judgeIfNull(element);
+    }
+    public void delete(E element){
         String sql = getDeleteSql(element);
         System.out.println("deleteSql = " + sql);
-        return JdbcUtils.excuteUpdate(sql,this.getStatement().getWhere().getParams());
+        JdbcUtils.excuteUpdate(sql, this.getStatement().getWhere().getParams());
     }
     public Object select(E element){
         judgeIfNull(element);
@@ -59,10 +65,14 @@ public class dbPipe<E> {
         String sql = getSelectSql(element);
         return JdbcUtils.excuteSelectInBatch(sql, clazz, this.getStatement().getWhere().getParams());
     }
-    public dbPipe<E> where(String query,Object ...params){
-        Where where = this.getStatement().getWhere();
+    public DbPipe<E> where(String query, Object ...params){
+        Where where = this.statement.getWhere();
         where.setQuery(query);
         where.setParams(params);
+        return this;
+    }
+    public DbPipe<E> set(Map<String,Object> params){
+        this.statement.getSet().setParams(params);
         return this;
     }
     private String getSelectSql(E element){
@@ -81,44 +91,22 @@ public class dbPipe<E> {
         deleteSql.append("delete from ").append(tableName).append(" where ").append(this.getStatement().getWhere().getQuery());
         return deleteSql.toString();
     }
-    private String getUpdateSqlAndParams(E element,Object[] params){
+    private String getUpdateByParamsSql(E element){
         Class clazz = element.getClass();
         String tableName = getTableName(clazz);
-        Field[] fields = clazz.getDeclaredFields();
         StringBuilder updateSql = new StringBuilder();
         updateSql.append("update ").append(tableName).append(" set ");
-        String idName = "";
-        int index = 0; // 记录参数的位置
-        for(int i = 0 ; i < fields.length ; i++){
-            fields[i].setAccessible(true);
-            // 找到id对应的列值和名
-            if(fields[i].isAnnotationPresent(Id.class)){
-                    idName = fields[i].getAnnotation(Id.class).name();
-                    try {
-                        params[params.length - 1] = fields[i].get(element);
-                        if(params[params.length - 1] == null) {
-                            throw new RuntimeException(element + "没有Id属性");
-                        }
-                }catch (IllegalAccessException e){
-                    System.out.println(e.getMessage());
-                    System.out.println("获取" + element + "属性值失败");
-                }
-            }
-            boolean isPresent = fields[i].isAnnotationPresent(Column.class);
-            if(isPresent){
-                Column column = fields[i].getAnnotation(Column.class);
-                String columnName = column.name();
-                updateSql.append(" ").append(columnName).append(" = ? ,");
-                try {
-                    params[index++] = fields[i].get(element);
-                }catch (IllegalAccessException e){
-                    System.out.println(e.getMessage());
-                    System.out.println("获取" +  element + "的属性值失败");
-                }
+        int index = 0;
+        Map<String, Object> setParams = this.statement.getSet().getParams();
+        int size = setParams.size();
+        for (String key : setParams.keySet()) {
+            index++;
+            updateSql.append(key).append(" = ?");
+            if(size != index){
+                updateSql.append(",");
             }
         }
-        updateSql.deleteCharAt(updateSql.length() - 1);
-        updateSql.append("where ").append(idName).append(" = ?");
+        updateSql.append(" where ").append(this.statement.getWhere().getQuery());
         System.out.println(updateSql.toString());
         return updateSql.toString();
     }
@@ -148,11 +136,12 @@ public class dbPipe<E> {
     }
     private String getTableName(Class<E> clazz){
         boolean existTableAnno = clazz.isAnnotationPresent(Table.class);
-        if(!existTableAnno){
-            throw new RuntimeException(clazz + "没有Table注解");
+        if(existTableAnno){
+            Table tableAnno = clazz.getAnnotation(Table.class);
+            return tableAnno.name();
         }
-        Table tableAnno = (Table) clazz.getAnnotation(Table.class);
-        return tableAnno.name();
+        System.out.println(Utlis.toSnakeCase(clazz.getSimpleName()));
+        return Utlis.toSnakeCase(clazz.getSimpleName());
     }
     private void judgeIfNull(E element){
         if(element == null){

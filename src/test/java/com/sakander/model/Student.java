@@ -1,8 +1,8 @@
 package com.sakander.model;
 
 import com.sakander.annotations.Id;
-import com.sakander.annotations.Table;
 import com.sakander.annotations.Column;
+import com.sakander.annotations.Table;
 import lombok.Data;
 
 import java.util.Calendar;

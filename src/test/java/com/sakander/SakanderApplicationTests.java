@@ -1,16 +1,18 @@
 package com.sakander;
 
 import com.sakander.model.Student;
-import com.sakander.model.dbPipe;
+import com.sakander.model.DbPipe;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @SpringBootTest(classes = Sakander.class)
 class SakanderApplicationTests {
-    private static dbPipe<Student> dbPipe = new dbPipe<>();
+    private static final DbPipe<Student> dbPipe = new DbPipe<>();
     @Test
     void addTest(){
         Student student = null;
@@ -20,12 +22,11 @@ class SakanderApplicationTests {
         }
     }
     @Test
-    void updateTest(){
-        Student student = null;
-        for(int i = 0 ; i < 10 ; i ++){
-            student = new Student(i,"new_qy" + i,i * 2);
-            dbPipe.update(student);
-        }
+    void updateByParamsTest(){
+        Map<String, Object> map = new HashMap<>();
+        map.put("name","54321");
+        map.put("age",144);
+        dbPipe.set(map).where("student_id = ?",12).updateByParams(new Student());
     }
     @Test
     void deleteTest(){
@@ -41,7 +42,6 @@ class SakanderApplicationTests {
         student = (Student) dbPipe.where("student_id = ? and name = ?",2,"qy2").select(new Student());
         System.out.println(student);
     }
-
     @Test
     void selectInBatchTest(){
         List<Student> students = dbPipe.where("name = ?","qy").selectInBatch(new Student());
