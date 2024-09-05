@@ -13,7 +13,7 @@ import java.util.Objects;
 
 @SpringBootTest(classes = Sakander.class)
 class SakanderApplicationTests {
-    private static final DbPipe<Student> dbPipe = new DbPipe<>();
+    private static final DbPipe<Student> dbPipe = DbPipe.create(new Student());
     @Test
     void addTest(){
         Student student = null;
@@ -22,6 +22,7 @@ class SakanderApplicationTests {
             dbPipe.add(student);
         }
     }
+
     @Test
     void updateByParamsTest(){
         Map<String, Object> map = new HashMap<>();
@@ -38,9 +39,9 @@ class SakanderApplicationTests {
     @Test
     void selectTest(){
         Student student = null;
-        student =  (Student) dbPipe.where("student_id = ?",12).select(new Student());
+        student =  (Student) dbPipe.where("student_id = ?",12).select();
         System.out.println(student);
-        student = (Student) dbPipe.where("student_id = ? and name = ?",2,"qy2").select(new Student());
+        student = (Student) dbPipe.where("student_id = ? and name = ?",2,"qy2").select();
         System.out.println(student);
     }
     @Test

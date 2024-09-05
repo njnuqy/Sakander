@@ -15,8 +15,14 @@ import java.util.Map;
 @Data
 public class DbPipe<E> {
     private Statement statement;
+    private E element;
     public DbPipe(){
         this.statement = new Statement();
+    }
+    public static <E> DbPipe<E> create(E element){
+        DbPipe<E> dbPipe = new DbPipe<>();
+        dbPipe.element = element;
+        return dbPipe;
     }
     public int add(E element){
         judgeIfNull(element);
@@ -28,20 +34,25 @@ public class DbPipe<E> {
         Object[] params = getSqlParams(element,fields);
         return JdbcUtils.excuteUpdate(sql,params);
     }
+    public int Update(){
+        judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        judgeIfHasFields(this.element,fields);
+        Object[] params = new Object[fields.length];
+        String sql = getUpdateSql(this.element,params);
+        return JdbcUtils.excuteUpdate(sql,params);
+    }
     public void addInBatch(List<E> elements){
         elements.forEach(this::add);
     }
-    public void updateByParams(E element){
+    public int updateByParams(E element){
         judgeIfNull(element);
         Map<String, Object> setMap = this.statement.getSet().getParams();
         Object[] setParams = setMap.values().toArray();
         Object[] params = Utlis.mergeArrays(setParams,this.statement.getWhere().getParams());
         String sql = getUpdateByParamsSql(element);
-        System.out.println(sql);
-        for (Object param : setParams){
-            System.out.println(param);
-        }
-        JdbcUtils.excuteUpdate(sql, params);
+        return JdbcUtils.excuteUpdate(sql, params);
     }
     public int update(E element){
         judgeIfNull(element);
@@ -57,12 +68,20 @@ public class DbPipe<E> {
         System.out.println("deleteSql = " + sql);
         JdbcUtils.excuteUpdate(sql, this.getStatement().getWhere().getParams());
     }
-    public Object select(E element){
-        judgeIfNull(element);
-        Class clazz = element.getClass();
+//    public Object select(E element){
+//        judgeIfNull(element);
+//        Class clazz = element.getClass();
+//        Field[] fields = clazz.getDeclaredFields();
+//        judgeIfHasFields(element,fields);
+//        String sql = getSelectSql(element);
+//        return JdbcUtils.excuteSelectOne(sql, clazz, this.getStatement().getWhere().getParams());
+//    }
+    public Object select(){
+        judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        judgeIfHasFields(element,fields);
-        String sql = getSelectSql(element);
+        judgeIfHasFields(this.element,fields);
+        String sql = getSelectSql(this.element);
         return JdbcUtils.excuteSelectOne(sql, clazz, this.getStatement().getWhere().getParams());
     }
     public <T> List<T> selectInBatch(E element){
@@ -104,8 +123,8 @@ public class DbPipe<E> {
         String tableName = getTableName(clazz);
         StringBuilder updateSql = new StringBuilder();
         updateSql.append("update ").append(tableName).append(" set ");
-        int index = 0;
         Map<String, Object> setParams = this.statement.getSet().getParams();
+        int index = 0;
         int size = setParams.size();
         for (String key : setParams.keySet()) {
             index++;

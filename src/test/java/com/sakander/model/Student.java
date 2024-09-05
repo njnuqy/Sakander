@@ -19,7 +19,6 @@ public class Student {
     private int age;
     @Column(name = "birthday", type = "Calendar")
     private Calendar birthday;
-
     public Student(){ super(); }
     public Student(int studentNo, String name, int age){
         this.studentNo = studentNo;

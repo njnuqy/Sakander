@@ -8,5 +8,4 @@ import java.lang.annotation.*;
 public @interface Column {
     String name();
     String type() default "string";
-    int length() default 20;
 }

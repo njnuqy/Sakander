@@ -8,6 +8,4 @@ import java.lang.annotation.*;
 public @interface Id {
     String name();
     String type() default "int";
-    int length() default 20;
-    int increment() default 1;
 }
