@@ -1,12 +1,11 @@
 package com.sakander;
 
-import com.sakander.config.DatabaseConfig;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-
+@SpringBootApplication
 public class Sakander {
     public static void main(String[] args) {
+        SpringApplication.run(Sakander.class,args);
     }
 }
