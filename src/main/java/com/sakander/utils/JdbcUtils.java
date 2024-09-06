@@ -36,7 +36,7 @@ public class JdbcUtils {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }finally {
-            release(pstmt,conn);
+            release(pstmt);
         }
         return result;
     }
@@ -58,7 +58,7 @@ public class JdbcUtils {
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         } finally {
-            release(pstmt, conn);
+            release(pstmt);
         }
         return result;
     }
@@ -80,26 +80,17 @@ public class JdbcUtils {
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         } finally {
-            release(pstmt, conn);
+            release(pstmt);
         }
         return result;
     }
-    public static void release(Statement stmt,Connection conn){
-        if(stmt != null){
-            try{
-                stmt.close();
-            }catch (SQLException e){
-                e.printStackTrace();
-            }
-            stmt = null;
-        }
-        if(conn != null){
+    public static void release(Statement stmt){
+        if(stmt != null) {
             try {
-                conn.close();
-            }catch (SQLException e){
+                stmt.close();
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
-            conn = null;
         }
     }
     private static <T> T resultSetToObject(ResultSet rs, Class<T> clazz) throws SQLException, IllegalAccessException, InstantiationException, NoSuchFieldException {
