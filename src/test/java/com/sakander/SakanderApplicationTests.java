@@ -6,10 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @SpringBootTest(classes = Sakander.class)
 class SakanderApplicationTests {
@@ -17,28 +14,28 @@ class SakanderApplicationTests {
     @Test
     void addTest(){
         Student student = null;
-        for(int i = 11 ; i < 13 ; i ++){
-            student = new Student(i,"qy",i * 2);
-            dbPipe.add(student);
-        }
+        student = new Student(10,"qy",12 * 2);
+        dbPipe.add(student);
     }
     @Test
     void updateByParamsTest(){
         Map<String, Object> map = new HashMap<>();
-        map.put("name","54321");
+        map.put("name","33333");
         map.put("age",144);
         dbPipe.set(map).where("student_id = ?",12).updateByParams(new Student());
+        Student student =  (Student) dbPipe.where("student_id = ?",12).select();
+        System.out.println(student);
     }
     @Test
     void deleteTest(){
-        for(int i = 0 ; i < 10 ; i ++){
+        for(int i = 0 ; i < 15 ; i ++){
             dbPipe.where("student_id = ?",i).delete(new Student());
         }
     }
     @Test
     void selectTest(){
         Student student = null;
-        student =  (Student) dbPipe.where("student_id = ?",12).select();
+        student =  (Student) dbPipe.where("student_id = ?",15).select();
         System.out.println(student);
         student = (Student) dbPipe.where("student_id = ? and name = ?",2,"qy2").select();
         System.out.println(student);
@@ -52,5 +49,12 @@ class SakanderApplicationTests {
     void updateTest(){
         Student student = new Student(11,"qyy",123);
         dbPipe.update(student);
+    }
+    @Test
+    void addInBatchTest(){
+        List<Student> students = new ArrayList<>();
+        students.add(new Student(12,"123",200));
+        students.add(new Student(13,"321",123));
+        dbPipe.addInBatch(students);
     }
 }
