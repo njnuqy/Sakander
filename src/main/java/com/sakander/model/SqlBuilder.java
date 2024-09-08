@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.sakander.annotations.Id;
+import com.sakander.clause.GroupBy;
+import com.sakander.clause.Having;
+import com.sakander.clause.Limit;
 import com.sakander.utils.Utlis;
 public class SqlBuilder {
     public static<E> String getInsertInBatchSql(List<E> elements, Statement statement, Field[] fields){
@@ -82,36 +85,68 @@ public class SqlBuilder {
     public static<E> String getUpdateByParamsSql(E element,Statement statement){
         Class clazz = element.getClass();
         String tableName = Utlis.getTableName(clazz);
-        StringBuilder updateSql = new StringBuilder();
-        updateSql.append("update ").append(tableName).append(" set ");
+        StringBuilder sql = new StringBuilder();
+        sql.append("update ").append(tableName).append(" set ");
         Map<String, Object> setParams = statement.getSet().getParams();
         int index = 0;
         int size = setParams.size();
         for (String key : setParams.keySet()) {
             index++;
-            updateSql.append(key).append(" = ?");
+            sql.append(key).append(" = ?");
             if(size != index){
-                updateSql.append(",");
+                sql.append(",");
             }
         }
-        updateSql.append(" where ").append(statement.getWhere().getQuery());
-        System.out.println(updateSql.toString());
-        return updateSql.toString();
+        sql.append(" where ").append(statement.getWhere().getQuery());
+        System.out.println(sql);
+        return buildSql(sql,statement);
     }
     public static<E> String getSelectSql(E element,Statement statement){
         Class clazz = element.getClass();
         String tableName = Utlis.getTableName(clazz);
         statement.setTableName(tableName);
-        StringBuilder selectSql = new StringBuilder();
-        selectSql.append("select * from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
-        return selectSql.toString();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select * from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
+        return buildSql(sql,statement);
     }
     public static<E> String getDeleteSql(E element,Statement statement){
         Class clazz = element.getClass();
         String tableName = Utlis.getTableName(clazz);
         statement.setTableName(tableName);
-        StringBuilder deleteSql = new StringBuilder();
-        deleteSql.append("delete from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
-        return deleteSql.toString();
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
+        return buildSql(sql,statement);
+    }
+    public static<E> String getCountSql(E element,Statement statement){
+        StringBuilder sql = new StringBuilder();
+        sql.append("select count");
+        for(String count : statement.getCount().getCounts()){
+            sql.append("(").append(count).append("),");
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        sql.append(" from ").append(statement.getTable().getTableName());
+        return buildSql(sql,statement);
+    }
+    public static String buildSql(StringBuilder sql,Statement statement){
+        Limit limit = statement.getLimit();
+        GroupBy groupBy = statement.getGroupBy();
+        Having having = statement.getHaving();
+        if(groupBy.getParams() != null){
+            sql.append(" group by ");
+            for (Object param : groupBy.getParams()) {
+                sql.append(param).append(",");
+            }
+            sql.deleteCharAt(sql.length()-1);
+        }
+        if(having.getQuery() != null){
+            sql.append("having ").append(having.getQuery());
+        }
+        if(limit.getLimit() > 0){
+            sql.append(" limit ").append(limit.getLimit());
+        }
+        if(limit.getOffset() > 0){
+            sql.append(" offset ").append(limit.getOffset());
+        }
+        return sql.toString();
     }
 }

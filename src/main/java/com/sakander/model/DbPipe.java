@@ -19,6 +19,7 @@ public class DbPipe<E> {
     public static <E> DbPipe<E> create(E element){
         DbPipe<E> dbPipe = new DbPipe<>();
         dbPipe.element = element;
+        dbPipe.statement.getTable().setTableName(Utlis.getTableName(element.getClass()));
         return dbPipe;
     }
     public int add(E element){
@@ -68,15 +69,17 @@ public class DbPipe<E> {
         Field[] fields = clazz.getDeclaredFields();
         Utlis.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getSelectSql(this.element,this.statement);
-        return JdbcUtils.excuteSelectOne(sql, clazz, this.getStatement().getWhere().getParams());
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
+        return JdbcUtils.excuteSelectOne(sql, clazz, params);
     }
-    public <T> List<T> selectInBatch(E element){
-        Utlis.judgeIfNull(element);
-        Class clazz = element.getClass();
+    public <T> List<T> selectInBatch(){
+        Utlis.judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(element,fields);
+        Utlis.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getSelectSql(this.element,this.statement);
-        return JdbcUtils.excuteSelectInBatch(sql, clazz, this.getStatement().getWhere().getParams());
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
+        return JdbcUtils.excuteSelectInBatch(sql, clazz, params);
     }
     public DbPipe<E> where(String query, Object ...params){
         Where where = this.statement.getWhere();
@@ -88,5 +91,32 @@ public class DbPipe<E> {
         this.statement.getSet().setParams(params);
         return this;
     }
-
+    public DbPipe<E> limit(int limit,int offset){
+        this.statement.getLimit().setLimit(limit);
+        this.statement.getLimit().setOffset(offset);
+        return this;
+    }
+    public DbPipe<E> limit(int limit){
+        this.statement.getLimit().setLimit(limit);
+        return this;
+    }
+    public DbPipe<E> group(Object ...params){
+        this.statement.getGroupBy().setParams(params);
+        return this;
+    }
+    public DbPipe<E> having(String query,Object ...params){
+        this.statement.getHaving().setQuery(query);
+        this.statement.getHaving().setParams(params);
+        return this;
+    }
+    public List<Integer> count(String ...counts){
+        Utlis.judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        Utlis.judgeIfHasFields(this.element,fields);
+        this.statement.getCount().setCounts(counts);
+        String sql = SqlBuilder.getCountSql(this.element,this.statement);
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
+        return JdbcUtils.excuteAggregate(sql,params);
+    }
 }

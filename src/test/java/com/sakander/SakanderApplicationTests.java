@@ -1,7 +1,9 @@
 package com.sakander;
 
+import ch.qos.logback.classic.spi.EventArgUtil;
 import com.sakander.model.Student;
 import com.sakander.model.DbPipe;
+import com.sakander.utils.JdbcUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,7 +16,7 @@ class SakanderApplicationTests {
     @Test
     void addTest(){
         Student student = null;
-        student = new Student(10,"qy",12 * 2);
+        student = new Student(101,"qy",123);
         dbPipe.add(student);
     }
     @Test
@@ -42,7 +44,7 @@ class SakanderApplicationTests {
     }
     @Test
     void selectInBatchTest(){
-        List<Student> students = dbPipe.where("name = ?","qy").selectInBatch(new Student());
+        List<Student> students = dbPipe.where("name = ?","qy").selectInBatch();
         students.forEach(System.out::println);
     }
     @Test
@@ -56,5 +58,10 @@ class SakanderApplicationTests {
         students.add(new Student(12,"123",200));
         students.add(new Student(13,"321",123));
         dbPipe.addInBatch(students);
+    }
+    @Test
+    void limitTest(){
+        List<Integer> objects = dbPipe.group("student_id").count("*");
+        objects.forEach(System.out::println);
     }
 }

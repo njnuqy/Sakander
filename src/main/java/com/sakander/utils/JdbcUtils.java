@@ -40,6 +40,32 @@ public class JdbcUtils {
         }
         return result;
     }
+    public static List<Integer> excuteAggregate(String sql,Object ...params){
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        List<Integer> result = new ArrayList<>();
+        for (Object param : params) {
+            System.out.println(param);
+        }
+        System.out.println(sql);
+        try {
+            conn = getConn();
+            pstmt = conn.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setObject(i + 1, params[i]);
+            }
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                result.add(Integer.valueOf(resultSet.getInt(1)));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            release(pstmt);
+        }
+        return result;
+    }
     public static <T> T excuteSelectOne(String sql,Class<T> clazz,Object ...params){
         Connection conn = null;
         PreparedStatement pstmt = null;
