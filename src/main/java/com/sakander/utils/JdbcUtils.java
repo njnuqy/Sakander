@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JdbcUtils {
     public static Connection getConn(){
@@ -36,32 +38,6 @@ public class JdbcUtils {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }finally {
-            release(pstmt);
-        }
-        return result;
-    }
-    public static List<Integer> excuteAggregate(String sql,Object ...params){
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet resultSet = null;
-        List<Integer> result = new ArrayList<>();
-        for (Object param : params) {
-            System.out.println(param);
-        }
-        System.out.println(sql);
-        try {
-            conn = getConn();
-            pstmt = conn.prepareStatement(sql);
-            for (int i = 0; i < params.length; i++) {
-                pstmt.setObject(i + 1, params[i]);
-            }
-            resultSet = pstmt.executeQuery();
-            while (resultSet.next()) {
-                result.add(Integer.valueOf(resultSet.getInt(1)));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
             release(pstmt);
         }
         return result;
@@ -104,6 +80,36 @@ public class JdbcUtils {
                 result.add(resultSetToObject(resultSet, clazz));
             }
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } finally {
+            release(pstmt);
+        }
+        return result;
+    }
+    public static List<Map<String,Object>> excuteAggregate(String sql,Object ...params){
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            conn = getConn();
+            pstmt = conn.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setObject(i + 1, params[i]);
+            }
+            resultSet = pstmt.executeQuery();
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            while (resultSet.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    Object value = resultSet.getObject(columnName);
+                    row.put(columnName, value);
+                }
+                result.add(row);
+            }
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             release(pstmt);

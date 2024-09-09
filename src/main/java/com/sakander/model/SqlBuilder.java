@@ -5,11 +5,24 @@ import java.util.List;
 import java.util.Map;
 
 import com.sakander.annotations.Id;
-import com.sakander.clause.GroupBy;
-import com.sakander.clause.Having;
-import com.sakander.clause.Limit;
+import com.sakander.clause.*;
 import com.sakander.utils.Utlis;
 public class SqlBuilder {
+    public static String getInsertSql(String tableName,Field[] fields){
+        StringBuilder insertSql = new StringBuilder();
+        insertSql.append("insert into ").append(tableName).append(" (");
+        for (Field field : fields) {
+            insertSql.append(Utlis.getColumnName(field)).append(",");
+        }
+        insertSql.deleteCharAt(insertSql.length()-1);
+        insertSql.append(") values (");
+        for(int i = 0 ; i < fields.length ; i++){
+            insertSql.append("?,");
+        }
+        insertSql.deleteCharAt(insertSql.length()-1);
+        insertSql.append(")");
+        return insertSql.toString();
+    }
     public static<E> String getInsertInBatchSql(List<E> elements, Statement statement, Field[] fields){
         StringBuilder insertInBatchSql = new StringBuilder();
         insertInBatchSql.append("insert into ").append(statement.getTable().getTableName()).append(" (");
@@ -28,21 +41,6 @@ public class SqlBuilder {
         }
         insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
         return insertInBatchSql.toString();
-    }
-    public static String getInsertSql(String tableName,Field[] fields){
-        StringBuilder insertSql = new StringBuilder();
-        insertSql.append("insert into ").append(tableName).append(" (");
-        for (Field field : fields) {
-            insertSql.append(Utlis.getColumnName(field)).append(",");
-        }
-        insertSql.deleteCharAt(insertSql.length()-1);
-        insertSql.append(") values (");
-        for(int i = 0 ; i < fields.length ; i++){
-            insertSql.append("?,");
-        }
-        insertSql.deleteCharAt(insertSql.length()-1);
-        insertSql.append(")");
-        return insertSql.toString();
     }
     public static<E> String getUpdateSql(E element,Object[] params){
         Class clazz = element.getClass();
@@ -99,23 +97,19 @@ public class SqlBuilder {
         }
         sql.append(" where ").append(statement.getWhere().getQuery());
         System.out.println(sql);
-        return buildSql(sql,statement);
+        return sql.toString();
     }
-    public static<E> String getSelectSql(E element,Statement statement){
-        Class clazz = element.getClass();
-        String tableName = Utlis.getTableName(clazz);
-        statement.setTableName(tableName);
+    public static String getSelectSql(Statement statement){
         StringBuilder sql = new StringBuilder();
-        sql.append("select * from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
-        return buildSql(sql,statement);
+        statement.getSQL();
+        sql.append("select * ").append(statement.buildSQL());
+        return buildSql(sql,statement).toString();
     }
     public static<E> String getDeleteSql(E element,Statement statement){
-        Class clazz = element.getClass();
-        String tableName = Utlis.getTableName(clazz);
-        statement.setTableName(tableName);
         StringBuilder sql = new StringBuilder();
-        sql.append("delete from ").append(tableName).append(" where ").append(statement.getWhere().getQuery());
-        return buildSql(sql,statement);
+        sql.append("delete ");
+        sql.append(statement.buildSQL());
+        return sql.toString();
     }
     public static<E> String getCountSql(E element,Statement statement){
         StringBuilder sql = new StringBuilder();
@@ -125,9 +119,42 @@ public class SqlBuilder {
         }
         sql.deleteCharAt(sql.length() - 1);
         sql.append(" from ").append(statement.getTable().getTableName());
-        return buildSql(sql,statement);
+        return buildSql(sql,statement).toString();
     }
-    public static String buildSql(StringBuilder sql,Statement statement){
+    public static<E> String getAggregateSql(E element,Statement statement,String ...cols){
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ");
+        for (String col : cols) {
+            sql.append(col).append(", ");
+        }
+        sql = aggregatesSql(sql,statement);
+        sql.append(statement.buildSQL());
+        System.out.println(buildSql(sql, statement));
+        return sql.toString();
+    }
+    public static StringBuilder aggregatesSql(StringBuilder sql,Statement statement){
+        String[] counts = statement.getCount().getCounts();
+        String[] sums = statement.getSum().getSums();
+        String[] maxes = statement.getMax().getMaxes();
+        String[] mines = statement.getMin().getMines();
+        String[] averages = statement.getAverage().getAverages();
+        sql = aggregateBuilder(sql,"count",counts);
+        sql = aggregateBuilder(sql,"sum",sums);
+        sql = aggregateBuilder(sql,"max",maxes);
+        sql = aggregateBuilder(sql,"min",mines);
+        sql = aggregateBuilder(sql,"average",averages);
+        sql.deleteCharAt(sql.length() - 1);
+        return sql;
+    }
+    public static StringBuilder aggregateBuilder(StringBuilder sql,String type,String ...params){
+        if(params != null){
+            for (String param : params) {
+                sql.append(type).append("(").append(param).append("),");
+            }
+        }
+        return sql;
+    }
+    public static StringBuilder buildSql(StringBuilder sql,Statement statement){
         Limit limit = statement.getLimit();
         GroupBy groupBy = statement.getGroupBy();
         Having having = statement.getHaving();
@@ -139,7 +166,7 @@ public class SqlBuilder {
             sql.deleteCharAt(sql.length()-1);
         }
         if(having.getQuery() != null){
-            sql.append("having ").append(having.getQuery());
+            sql.append(" having ").append(having.getQuery());
         }
         if(limit.getLimit() > 0){
             sql.append(" limit ").append(limit.getLimit());
@@ -147,6 +174,6 @@ public class SqlBuilder {
         if(limit.getOffset() > 0){
             sql.append(" offset ").append(limit.getOffset());
         }
-        return sql.toString();
+        return sql;
     }
 }

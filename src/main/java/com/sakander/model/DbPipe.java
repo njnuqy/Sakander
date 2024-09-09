@@ -1,5 +1,7 @@
 package com.sakander.model;
 
+import com.sakander.clause.Count;
+import com.sakander.clause.Sum;
 import com.sakander.clause.Where;
 import com.sakander.utils.Utlis;
 import com.sakander.utils.JdbcUtils;
@@ -58,18 +60,26 @@ public class DbPipe<E> {
         String sql = SqlBuilder.getUpdateByParamsSql(element,this.statement);
         return JdbcUtils.excuteUpdate(sql, params);
     }
-    public void delete(E element){
-        String sql = SqlBuilder.getDeleteSql(element,this.statement);
+    public void delete(){
+        String sql = SqlBuilder.getDeleteSql(this.element,this.statement);
         System.out.println("deleteSql = " + sql);
-        JdbcUtils.excuteUpdate(sql, this.getStatement().getWhere().getParams());
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        for (Object param : params) {
+            System.out.println(param);
+        }
+        JdbcUtils.excuteUpdate(sql, params);
     }
     public Object select(){
         Utlis.judgeIfNull(this.element);
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
         Utlis.judgeIfHasFields(this.element,fields);
-        String sql = SqlBuilder.getSelectSql(this.element,this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
+        String sql = SqlBuilder.getSelectSql(this.statement);
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        System.out.println(sql);
+        for (Object param : params) {
+            System.out.println(param);
+        }
         return JdbcUtils.excuteSelectOne(sql, clazz, params);
     }
     public <T> List<T> selectInBatch(){
@@ -77,9 +87,18 @@ public class DbPipe<E> {
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
         Utlis.judgeIfHasFields(this.element,fields);
-        String sql = SqlBuilder.getSelectSql(this.element,this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
+        String sql = SqlBuilder.getSelectSql(this.statement);
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.excuteSelectInBatch(sql, clazz, params);
+    }
+    public List<Map<String, Object>> selectInAggregate(String ...cols){
+        Utlis.judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        Utlis.judgeIfHasFields(this.element,fields);
+        String sql = SqlBuilder.getAggregateSql(this.element,this.statement,cols);
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        return JdbcUtils.excuteAggregate(sql,params);
     }
     public DbPipe<E> where(String query, Object ...params){
         Where where = this.statement.getWhere();
@@ -109,14 +128,24 @@ public class DbPipe<E> {
         this.statement.getHaving().setParams(params);
         return this;
     }
-    public List<Integer> count(String ...counts){
-        Utlis.judgeIfNull(this.element);
-        Class clazz = this.element.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+    public DbPipe<E> count(String ...counts){
         this.statement.getCount().setCounts(counts);
-        String sql = SqlBuilder.getCountSql(this.element,this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams(),this.statement.getHaving().getParams());
-        return JdbcUtils.excuteAggregate(sql,params);
+        return this;
+    }
+    public DbPipe<E> sum(String ...sums){
+        this.statement.getSum().setSums(sums);
+        return this;
+    }
+    public DbPipe<E> max(String ...maxes){
+        this.statement.getMax().setMaxes(maxes);
+        return this;
+    }
+    public DbPipe<E> min(String ...mines){
+        this.statement.getMin().setMines(mines);
+        return this;
+    }
+    public DbPipe<E> average(String ...averages){
+        this.statement.getAverage().setAverages(averages);
+        return this;
     }
 }
