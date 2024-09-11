@@ -3,6 +3,7 @@ package com.sakander;
 import ch.qos.logback.classic.spi.EventArgUtil;
 import com.sakander.clause.Count;
 import com.sakander.clause.Sum;
+import com.sakander.constants.Direction;
 import com.sakander.model.Student;
 import com.sakander.model.DbPipe;
 import com.sakander.utils.JdbcUtils;
@@ -59,22 +60,42 @@ class SakanderApplicationTests {
     }
     @Test
     void limitTest(){
-        List<Object> objects = dbPipe.group("student_id").where("`age` > ?",20).count("age").selectInBatch();
+        List<Object> objects = dbPipe.where("`age` > ?",20).limit(2).selectInBatch();
         objects.forEach(System.out::println);
     }
     @Test
-    void aggregateTest(){
+    void countTest(){
         List<Map<String, Object>> maps = dbPipe.group("name").count("age").selectInAggregate("name");
+        test(maps);
+    }
+    @Test
+    void sumTest(){
+        List<Map<String,Object>> maps = dbPipe.group("name").sum("age").selectInAggregate("name");
+        test(maps);
+    }
+    @Test
+    void maxTest(){
+        List<Map<String,Object>> maps = dbPipe.group("name").max("age").selectInAggregate("name");
+        test(maps);
+    }
+    @Test
+    void minTest(){
+        List<Map<String,Object>> maps = dbPipe.group("name").min("age").selectInAggregate("name");
+        test(maps);
+    }
+    @Test
+    void averageTest(){
+        List<Map<String,Object>> maps = dbPipe.group("name").average("age").selectInAggregate("name");
+        test(maps);
+    }
+    @Test
+    void joinTest(){
+        List<Map<String, Object>> maps = dbPipe.join(Direction.DIRECTION_LEFT, "teacher", "name").on("t2.student_id = t1.student_id").selectWithJoin("name as studentName");
+        test(maps);
+    }
+    void test(List<Map<String,Object>> maps){
         Map<String, Object> map0 = maps.get(0);
-        Map<String, Object> map1 = maps.get(1);
-        Map<String, Object> map2 = maps.get(2);
         System.out.println(map0.keySet());
         map0.entrySet().forEach(System.out::println);
-        System.out.println("---------------");
-        Object o = map1.get("name");
-        System.out.println("name=======" + o);
-        map1.entrySet().forEach(System.out::println);
-        System.out.println("---------------");
-        System.out.println(map2.keySet());
     }
 }

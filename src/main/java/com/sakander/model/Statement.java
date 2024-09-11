@@ -16,6 +16,8 @@ public class Statement {
     private Max max;
     private Min min;
     private Average average;
+    private Join join;
+    private On on;
     private String SQL;
     public Statement(){
         this.where = new Where();
@@ -29,6 +31,8 @@ public class Statement {
         this.max = new Max();
         this.min = new Min();
         this.average = new Average();
+        this.join = new Join();
+        this.on = new On();
     }
     public String buildSQL(){
         StringBuilder sql = new StringBuilder();

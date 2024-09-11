@@ -2,6 +2,7 @@ package com.sakander.model;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.sakander.annotations.Id;
@@ -132,6 +133,25 @@ public class SqlBuilder {
         System.out.println(buildSql(sql, statement));
         return sql.toString();
     }
+    public static<E> String getJoinSql(E element,Statement statement,String ...cols){
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ");
+        for (String col : cols) {
+            sql.append("t1.").append(col).append(",");
+        }
+        Join join = statement.getJoin();
+        for (String col : join.getCols()) {
+            sql.append("t2.").append(col).append(",");
+        }
+        sql.deleteCharAt(sql.length() - 1);
+
+        sql.append(" from ").append(statement.getTable().getTableName()).append(" t1 ").append(join.getDirection()).append(" join ")
+                .append(join.getTable()).append(" t2 on ").append(statement.getOn().getQuery());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
+        return sql.toString();
+    }
     public static StringBuilder aggregatesSql(StringBuilder sql,Statement statement){
         String[] counts = statement.getCount().getCounts();
         String[] sums = statement.getSum().getSums();
@@ -142,7 +162,7 @@ public class SqlBuilder {
         sql = aggregateBuilder(sql,"sum",sums);
         sql = aggregateBuilder(sql,"max",maxes);
         sql = aggregateBuilder(sql,"min",mines);
-        sql = aggregateBuilder(sql,"average",averages);
+        sql = aggregateBuilder(sql,"avg",averages);
         sql.deleteCharAt(sql.length() - 1);
         return sql;
     }

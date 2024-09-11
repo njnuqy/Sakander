@@ -104,8 +104,12 @@ public class JdbcUtils {
                 Map<String, Object> row = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
                     String columnName = metaData.getColumnName(i);
-                    Object value = resultSet.getObject(columnName);
-                    row.put(columnName, value);
+                    String aliasName = metaData.getColumnLabel(i); // 如果JDBC驱动支持，这将返回别名
+                    if (aliasName == null || aliasName.isEmpty()) {
+                        aliasName = columnName; // 如果别名不存在或为空，则使用原始列名
+                    }
+                    Object value = resultSet.getObject(i); // 使用索引来获取值
+                    row.put(aliasName, value); // 使用别名作为Map的键
                 }
                 result.add(row);
             }

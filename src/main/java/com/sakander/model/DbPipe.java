@@ -1,8 +1,6 @@
 package com.sakander.model;
 
-import com.sakander.clause.Count;
-import com.sakander.clause.Sum;
-import com.sakander.clause.Where;
+import com.sakander.clause.*;
 import com.sakander.utils.Utlis;
 import com.sakander.utils.JdbcUtils;
 import lombok.Data;
@@ -100,6 +98,16 @@ public class DbPipe<E> {
         Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.excuteAggregate(sql,params);
     }
+    public List<Map<String, Object>> selectWithJoin(String ...cols){
+        Utlis.judgeIfNull(this.element);
+        Class clazz = this.element.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+        Utlis.judgeIfHasFields(this.element,fields);
+        String sql = SqlBuilder.getJoinSql(this.element,this.statement,cols);
+        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        System.out.println(sql);
+        return JdbcUtils.excuteAggregate(sql,params);
+    }
     public DbPipe<E> where(String query, Object ...params){
         Where where = this.statement.getWhere();
         where.setQuery(query);
@@ -146,6 +154,18 @@ public class DbPipe<E> {
     }
     public DbPipe<E> average(String ...averages){
         this.statement.getAverage().setAverages(averages);
+        return this;
+    }
+    public DbPipe<E> join(String direction,String table,String ...cols){
+        Join join = this.statement.getJoin();
+        join.setDirection(direction);
+        join.setTable(table);
+        join.setCols(cols);
+        return this;
+    }
+    public DbPipe<E> on(String query){
+        On on = this.statement.getOn();
+        on.setQuery(query);
         return this;
     }
 }
