@@ -34,12 +34,4 @@ public class Statement {
         this.join = new Join();
         this.on = new On();
     }
-    public String buildSQL(){
-        StringBuilder sql = new StringBuilder();
-        sql.append(" from ").append(this.table.getTableName());
-        if(this.where.getQuery() != null){
-            sql.append(" where ").append(this.where.getQuery());
-        }
-        return sql.toString();
-    }
 }

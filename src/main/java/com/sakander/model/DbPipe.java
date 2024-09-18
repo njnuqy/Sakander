@@ -22,6 +22,13 @@ public class DbPipe<E> {
         dbPipe.statement.getTable().setTableName(Utlis.getTableName(element.getClass()));
         return dbPipe;
     }
+    public <T> List<T> querySQL(String sql){
+        Class clazz = this.element.getClass();
+        return JdbcUtils.excuteSelectInBatch(sql,clazz);
+    }
+    public int updateSQL(String sql){
+        return JdbcUtils.excuteUpdate(sql);
+    }
     public int add(E element){
         Utlis.judgeIfNull(element);
         Class clazz = element.getClass();
@@ -56,7 +63,7 @@ public class DbPipe<E> {
         Object[] setParams = setMap.values().toArray();
         Object[] params = Utlis.mergeArrays(setParams,this.statement.getWhere().getParams());
         String sql = SqlBuilder.getUpdateByParamsSql(element,this.statement);
-        return JdbcUtils.excuteUpdate(sql, params);
+        return JdbcUtils.excuteUpdate(sql,params);
     }
     public void delete(){
         String sql = SqlBuilder.getDeleteSql(this.element,this.statement);
@@ -65,7 +72,7 @@ public class DbPipe<E> {
         for (Object param : params) {
             System.out.println(param);
         }
-        JdbcUtils.excuteUpdate(sql, params);
+        JdbcUtils.excuteUpdate(sql,params);
     }
     public Object select(){
         Utlis.judgeIfNull(this.element);
@@ -78,7 +85,7 @@ public class DbPipe<E> {
         for (Object param : params) {
             System.out.println(param);
         }
-        return JdbcUtils.excuteSelectOne(sql, clazz, params);
+        return JdbcUtils.excuteSelectOne(sql,clazz, params);
     }
     public <T> List<T> selectInBatch(){
         Utlis.judgeIfNull(this.element);
@@ -87,7 +94,7 @@ public class DbPipe<E> {
         Utlis.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getSelectSql(this.statement);
         Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
-        return JdbcUtils.excuteSelectInBatch(sql, clazz, params);
+        return JdbcUtils.excuteSelectInBatch(sql,clazz, params);
     }
     public List<Map<String, Object>> selectInAggregate(String ...cols){
         Utlis.judgeIfNull(this.element);

@@ -102,14 +102,18 @@ public class SqlBuilder {
     }
     public static String getSelectSql(Statement statement){
         StringBuilder sql = new StringBuilder();
-        statement.getSQL();
-        sql.append("select * ").append(statement.buildSQL());
+        sql.append("select * ").append(" from ").append(statement.getTable().getTableName());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
         return buildSql(sql,statement).toString();
     }
     public static<E> String getDeleteSql(E element,Statement statement){
         StringBuilder sql = new StringBuilder();
-        sql.append("delete ");
-        sql.append(statement.buildSQL());
+        sql.append("delete ").append(" from ").append(statement.getTable().getTableName());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
         return sql.toString();
     }
     public static<E> String getCountSql(E element,Statement statement){
@@ -129,7 +133,10 @@ public class SqlBuilder {
             sql.append(col).append(", ");
         }
         sql = aggregatesSql(sql,statement);
-        sql.append(statement.buildSQL());
+        sql.append(" from ").append(statement.getTable().getTableName());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
         System.out.println(buildSql(sql, statement));
         return sql.toString();
     }

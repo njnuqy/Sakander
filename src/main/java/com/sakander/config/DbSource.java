@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 @Getter
 @Component
 public class DbSource {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(DbSource.class);
     private static HikariDataSource dataSource;
     @Autowired
     private DbSourceProperties dataSourceProperties;
@@ -34,6 +36,7 @@ public class DbSource {
     @Bean
     public static Connection getConnection() throws SQLException {
         if (dataSource == null) {
+            log.warn("No database connection available");
             throw new IllegalStateException("DataSource is not initialized.");
         }
         return dataSource.getConnection();

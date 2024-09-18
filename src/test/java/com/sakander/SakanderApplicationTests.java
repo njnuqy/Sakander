@@ -93,6 +93,14 @@ class SakanderApplicationTests {
         List<Map<String, Object>> maps = dbPipe.join(Direction.DIRECTION_LEFT, "teacher", "name").on("t2.student_id = t1.student_id").selectWithJoin("name as studentName");
         test(maps);
     }
+    @Test
+    void sqlTest(){
+        List<Student> objects = dbPipe.querySQL("select * from student");
+        objects.forEach(object -> {
+            System.out.println(object);
+        });
+        dbPipe.updateSQL("update student set `name` = 'qqq' where student_id = 10");
+    }
     void test(List<Map<String,Object>> maps){
         Map<String, Object> map0 = maps.get(0);
         System.out.println(map0.keySet());

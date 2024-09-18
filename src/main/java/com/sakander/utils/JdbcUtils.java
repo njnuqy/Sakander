@@ -2,10 +2,6 @@ package com.sakander.utils;
 
 import com.sakander.annotations.Column;
 import com.sakander.config.DbSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
@@ -30,15 +26,17 @@ public class JdbcUtils {
         int result = -1;
         try {
             conn = getConn();
+            conn.setAutoCommit(false);
             pstmt = conn.prepareStatement(sql);
             for (int i = 0; i < params.length; i++){
                 pstmt.setObject(i+1, params[i]);
             }
             result = pstmt.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }finally {
-            release(pstmt);
+            release(pstmt,conn);
         }
         return result;
     }
@@ -60,7 +58,7 @@ public class JdbcUtils {
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         } finally {
-            release(pstmt);
+            release(pstmt,conn,resultSet);
         }
         return result;
     }
@@ -82,7 +80,7 @@ public class JdbcUtils {
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         } finally {
-            release(pstmt);
+            release(pstmt,conn,resultSet);
         }
         return result;
     }
@@ -116,14 +114,44 @@ public class JdbcUtils {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            release(pstmt);
+            release(pstmt,conn,resultSet);
         }
         return result;
     }
-    public static void release(Statement stmt){
+    public static void release(Statement stmt,Connection conn,ResultSet rs){
         if(stmt != null) {
             try {
                 stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if(conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if(rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void release(Statement stmt,Connection conn){
+        if(stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if(conn != null) {
+            try {
+                conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -134,12 +162,9 @@ public class JdbcUtils {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
-            if(field.isAnnotationPresent(Column.class)){
-                Column column = field.getAnnotation(Column.class);
-                String columnName = column.name();
-                Object value = rs.getObject(columnName);
-                field.set(obj, value);
-            }
+            String columnName = Utlis.getColumnName(field);
+            Object value = rs.getObject(columnName);
+            field.set(obj, value);
         }
         return obj;
     }
