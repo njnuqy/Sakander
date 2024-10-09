@@ -2,6 +2,7 @@ package com.sakander.utils;
 
 import com.sakander.annotations.Column;
 import com.sakander.annotations.Table;
+import com.sakander.model.SqlBuilder;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -86,4 +87,5 @@ public class Utlis {
             throw new RuntimeException(element + "没有属性");
         }
     }
+
 }

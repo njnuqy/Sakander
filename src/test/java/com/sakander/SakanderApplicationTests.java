@@ -50,42 +50,52 @@ class SakanderApplicationTests {
     @Test
     void selectTest(){
         Student student = null;
-        student =  (Student) dbPipe.where("student_id = ? and name = ?",15,"321").select();
+        student =  (Student) dbPipe.where("student_id = ?",15).select();
         System.out.println(student);
     }
     @Test
     void selectInBatchTest(){
-        List<Student> students = dbPipe.where("name = ?","qy").limit(1,1).selectInBatch();
+        List<Student> students = dbPipe.where("name = ?","qy").limit(2,1).easySelectInBatch();
+        students.forEach(System.out::println);
+        students = dbPipe.where("name = ?","qy").limit(1,1).complexSelectInBatch();
         students.forEach(System.out::println);
     }
     @Test
+    void selectWithColumnsTest(){
+        List<Map<String, Object>> list = dbPipe.where("student_id = ?", 15).selectWithColumns("name", "age");
+        Map<String, Object> map = list.get(0);
+        map.forEach((k,v) -> {
+            System.out.println(k + "===" + v);
+        });
+    }
+    @Test
     void limitTest(){
-        List<Object> objects = dbPipe.where("`age` > ?",20).limit(2).selectInBatch();
+        List<Object> objects = dbPipe.where("`age` > ?",20).limit(2).easySelectInBatch();
         objects.forEach(System.out::println);
     }
     @Test
     void countTest(){
-        List<Map<String, Object>> maps = dbPipe.group("name").count("age").selectInAggregate("name");
+        List<Map<String, Object>> maps = dbPipe.group("name").count("age").selectWithAggregate("name");
         test(maps);
     }
     @Test
     void sumTest(){
-        List<Map<String,Object>> maps = dbPipe.group("name").sum("age").selectInAggregate("name");
+        List<Map<String,Object>> maps = dbPipe.group("name").sum("age").selectWithAggregate("name");
         test(maps);
     }
     @Test
     void maxTest(){
-        List<Map<String,Object>> maps = dbPipe.group("name").max("age").selectInAggregate("name");
+        List<Map<String,Object>> maps = dbPipe.group("name").max("age").selectWithAggregate("name");
         test(maps);
     }
     @Test
     void minTest(){
-        List<Map<String,Object>> maps = dbPipe.group("name").min("age").selectInAggregate("name");
+        List<Map<String,Object>> maps = dbPipe.group("name").min("age").selectWithAggregate("name");
         test(maps);
     }
     @Test
     void averageTest(){
-        List<Map<String,Object>> maps = dbPipe.group("name").average("age").selectInAggregate("name");
+        List<Map<String,Object>> maps = dbPipe.group("name").average("age").selectWithAggregate("name");
         test(maps);
     }
     @Test

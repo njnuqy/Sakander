@@ -2,7 +2,6 @@ package com.sakander.model;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import com.sakander.annotations.Id;
@@ -100,7 +99,28 @@ public class SqlBuilder {
         System.out.println(sql);
         return sql.toString();
     }
-    public static String getSelectSql(Statement statement){
+    public static String getEasySelectSql(Statement statement){
+        StringBuilder sql = new StringBuilder();
+        sql.append("select * ").append(" from ").append(statement.getTable().getTableName());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
+        return sql.toString();
+    }
+    public static String getSelectWithColumnsSql(Statement statement,String ...columns){
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ");
+        for (String column : columns) {
+            sql.append(column).append(",");
+        }
+        sql.deleteCharAt(sql.length()-1);
+        sql.append(" from ").append(statement.getTable().getTableName());
+        if(statement.getWhere().getQuery() != null){
+            sql.append(" where ").append(statement.getWhere().getQuery());
+        }
+        return buildSql(sql,statement).toString();
+    }
+    public static String getComplexSelectSql(Statement statement){
         StringBuilder sql = new StringBuilder();
         sql.append("select * ").append(" from ").append(statement.getTable().getTableName());
         if(statement.getWhere().getQuery() != null){
@@ -182,7 +202,7 @@ public class SqlBuilder {
         return sql;
     }
     public static StringBuilder buildSql(StringBuilder sql,Statement statement){
-        Limit limit = statement.getLimit();
+        RowRestriction rowRestriction = statement.getRowRestriction();
         GroupBy groupBy = statement.getGroupBy();
         Having having = statement.getHaving();
         if(groupBy.getParams() != null){
@@ -195,12 +215,8 @@ public class SqlBuilder {
         if(having.getQuery() != null){
             sql.append(" having ").append(having.getQuery());
         }
-        if(limit.getLimit() > 0){
-            sql.append(" limit ").append(limit.getLimit());
-        }
-        if(limit.getOffset() > 0){
-            sql.append(" offset ").append(limit.getOffset());
-        }
+        sql.append(" limit ").append(rowRestriction.getLimit());
+        sql.append(" offset ").append(rowRestriction.getOffset());
         return sql;
     }
 }

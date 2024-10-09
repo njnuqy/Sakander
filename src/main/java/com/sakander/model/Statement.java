@@ -8,7 +8,7 @@ public class Statement {
     private Where where;
     private Set set;
     private Table table;
-    private Limit limit;
+    private RowRestriction rowRestriction;
     private GroupBy groupBy;
     private Having having;
     private Count count;
@@ -23,7 +23,7 @@ public class Statement {
         this.where = new Where();
         this.set = new Set();
         this.table = new Table();
-        this.limit = new Limit();
+        this.rowRestriction = new RowRestriction();
         this.groupBy = new GroupBy();
         this.having = new Having();
         this.count = new Count();
