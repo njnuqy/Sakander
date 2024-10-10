@@ -1,7 +1,7 @@
 package com.sakander.cache.impl;
 
 import com.sakander.cache.Cache;
-import com.sakander.cache.CacheException;
+import com.sakander.expections.CacheException;
 
 import java.util.HashMap;
 import java.util.Map;

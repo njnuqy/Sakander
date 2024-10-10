@@ -1,4 +1,4 @@
-package com.sakander.model;
+package com.sakander.statement;
 
 import com.sakander.clause.*;
 import lombok.Data;
@@ -19,6 +19,8 @@ public class Statement {
     private Join join;
     private On on;
     private String SQL;
+    private Integer timeout;
+    private Integer fetchSize;
     public Statement(){
         this.where = new Where();
         this.set = new Set();

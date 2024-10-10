@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.sakander.annotations.Id;
 import com.sakander.clause.*;
+import com.sakander.statement.Statement;
 import com.sakander.utils.Utlis;
 public class SqlBuilder {
     public static String getInsertSql(String tableName,Field[] fields){

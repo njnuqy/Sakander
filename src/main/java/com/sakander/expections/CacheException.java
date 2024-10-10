@@ -1,4 +1,4 @@
-package com.sakander.cache;
+package com.sakander.expections;
 
 import jakarta.persistence.PersistenceException;
 
