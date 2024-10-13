@@ -18,8 +18,8 @@ public abstract class BaseExecutor implements Executor{
         this.localCache = new PerpetualCache("LocalCache");
     }
     @Override
-    public int update(Statement statement) throws SQLException {
-        return doUpdate(statement);
+    public int update(Statement statement,Class<?> type) throws SQLException {
+        return doUpdate(statement,type);
     }
 
     @Override
@@ -33,26 +33,26 @@ public abstract class BaseExecutor implements Executor{
     }
 
     @Override
-    public <E> List<E> query(Statement statement, Object parameter, ResultHandler resultHandler) throws SQLException {
+    public <E> List<E> query(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException {
         CacheKey key = createCacheKey(statement);
-        return query(statement,parameter,resultHandler,key);
+        return query(statement,resultHandler,key,type);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E> List<E> query(Statement statement, Object parameter, ResultHandler resultHandler, CacheKey cacheKey) throws SQLException {
+    public <E> List<E> query(Statement statement, ResultHandler resultHandler, CacheKey cacheKey,Class<?> type) throws SQLException {
         List<E> list = (List<E>) localCache.getObejct(cacheKey);
         if(list != null){
             return list;
         }
-        list = queryFromDatabase(statement,parameter,resultHandler,cacheKey);
+        list = queryFromDatabase(statement,resultHandler,cacheKey,type);
         return list;
     }
 
-    private <E> List<E> queryFromDatabase(Statement statement,Object parameter,ResultHandler resultHandler,CacheKey cacheKey) throws SQLException {
+    private <E> List<E> queryFromDatabase(Statement statement,ResultHandler resultHandler,CacheKey cacheKey,Class<?> type) throws SQLException {
         List<E> list;
         try {
-            list = doQuery(statement,parameter,resultHandler);
+            list = doQuery(statement,resultHandler,type);
         }finally {
             localCache.removeObejct(cacheKey);
         }
@@ -60,7 +60,7 @@ public abstract class BaseExecutor implements Executor{
         return list;
     }
 
-    protected abstract int doUpdate(Statement statement) throws SQLException;
+    protected abstract int doUpdate(Statement statement,Class<?> type) throws SQLException;
 
-    protected abstract <E> List<E> doQuery(Statement statement, Object parameter, ResultHandler resultHandler) throws SQLException;
+    protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException;
 }

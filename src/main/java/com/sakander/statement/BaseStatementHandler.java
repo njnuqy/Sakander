@@ -16,12 +16,15 @@ public abstract class BaseStatementHandler implements StatementHandler{
     protected final Executor executor;
     protected final Statement statement;
     protected final String sql;
+    protected final Class<?> type;
     protected final ResultSetHandler resultSetHandler;
     protected final ParameterHandler parameterHandler;
-    public BaseStatementHandler(Executor executor,Statement statement,String sql){
+
+    public BaseStatementHandler(Executor executor,Statement statement,Class<?> type){
         this.executor = executor;
         this.statement = statement;
-        this.sql = sql;
+        this.sql = statement.getSQL();
+        this.type = type;
         this.resultSetHandler = new DefaultResultSetHandler();
         this.parameterHandler = new DefaultParameterHandler();
     }

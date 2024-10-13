@@ -12,11 +12,11 @@ import java.util.List;
 public interface Executor {
     ResultHandler NO_RESULT_HANDLER = null;
 
-    int update(Statement statement) throws SQLException;
+    int update(Statement statement,Class<?> type) throws SQLException;
 
-    <E> List<E> query(Statement statement, Object parameter, ResultHandler resultHandler,CacheKey cacheKey) throws SQLException;
+    <E> List<E> query(Statement statement, ResultHandler resultHandler,CacheKey cacheKey,Class<?> type) throws SQLException;
 
-    <E> List<E> query(Statement statement,Object parameter,ResultHandler resultHandler) throws SQLException;
+    <E> List<E> query(Statement statement,ResultHandler resultHandler,Class<?> type) throws SQLException;
 
     CacheKey createCacheKey(Statement statement);
 

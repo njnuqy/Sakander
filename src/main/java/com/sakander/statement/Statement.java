@@ -19,8 +19,6 @@ public class Statement {
     private Join join;
     private On on;
     private String SQL;
-    private Integer timeout;
-    private Integer fetchSize;
     private Object[] Parameters;
     public Statement(){
         this.where = new Where();
@@ -36,5 +34,6 @@ public class Statement {
         this.average = new Average();
         this.join = new Join();
         this.on = new On();
+        this.Parameters = new Object[0];
     }
 }

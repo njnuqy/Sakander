@@ -103,7 +103,7 @@ public class SqlBuilder {
     public static String getEasySelectSql(Statement statement){
         StringBuilder sql = new StringBuilder();
         sql.append("select * ").append(" from ").append(statement.getTable().getTableName());
-        if(statement.getWhere().getQuery() != null){
+        if(!statement.getWhere().equals(Where.DEFAULT_WHERE)){
             sql.append(" where ").append(statement.getWhere().getQuery());
         }
         return sql.toString();

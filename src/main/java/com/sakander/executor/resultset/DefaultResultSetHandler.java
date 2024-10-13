@@ -3,15 +3,12 @@ package com.sakander.executor.resultset;
 import com.sakander.executor.result.DefaultResultContext;
 import com.sakander.executor.result.DefaultResultHandler;
 import com.sakander.mapping.ResultMap;
-import com.sakander.mapping.ResultMapping;
 import com.sakander.refection.DefaultReflectorFactory;
-import com.sakander.refection.MetaClass;
 import com.sakander.refection.ReflectorFactory;
 import com.sakander.refection.factory.DefaultObejctFactory;
 import com.sakander.refection.factory.ObjectFactory;
 import com.sakander.session.ResultHandler;
 
-import javax.xml.transform.Result;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

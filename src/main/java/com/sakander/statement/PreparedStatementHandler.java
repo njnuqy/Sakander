@@ -13,21 +13,18 @@ import java.util.List;
 
 public class PreparedStatementHandler extends BaseStatementHandler{
 
-    public PreparedStatementHandler(Executor executor, Statement statement, String sql) {
-        super(executor, statement, sql);
+    public PreparedStatementHandler(Executor executor, Statement statement, String sql,Class type) {
+        super(executor, statement,type);
     }
 
     @Override
     protected PreparedStatement instantiatePreparedStatement(Connection connection) throws SQLException {
         return connection.prepareStatement(sql);
     }
-
-
     @Override
     public void parameterize(PreparedStatement pstmt) throws SQLException {
         parameterHandler.setParameters(pstmt,statement.getParameters());
     }
-
     @Override
     public int update(PreparedStatement statement) {
         return 0;
@@ -36,6 +33,6 @@ public class PreparedStatementHandler extends BaseStatementHandler{
     @Override
     public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler) throws SQLException {
         pstmt.execute();
-        return resultSetHandler.handleResultSets(pstmt,new ResultMap());
+        return resultSetHandler.handleResultSets(pstmt,new ResultMap(type));
     }
 }

@@ -16,10 +16,10 @@ import java.util.List;
 @Slf4j
 public class SimpleExecutor extends BaseExecutor{
     @Override
-    protected int doUpdate(Statement statement) throws SQLException {
+    protected int doUpdate(Statement statement,Class<?> type) throws SQLException {
         PreparedStatement pstmt = null;
         try {
-            StatementHandler handler = new PreparedStatementHandler(this,statement,statement.getSQL());
+            StatementHandler handler = new PreparedStatementHandler(this,statement,statement.getSQL(),type);
             pstmt = prepareStatement(handler);
             return handler.update(pstmt);
         } finally {
@@ -29,10 +29,10 @@ public class SimpleExecutor extends BaseExecutor{
 
 
     @Override
-    protected <E> List<E> doQuery(Statement statement,Object parameter, ResultHandler resultHandler) throws SQLException {
+    protected <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException {
         PreparedStatement pstmt = null;
         try {
-            StatementHandler handler = new PreparedStatementHandler(this,statement,statement.getSQL());
+            StatementHandler handler = new PreparedStatementHandler(this,statement,statement.getSQL(),type);
             pstmt = prepareStatement(handler);
             return handler.query(pstmt,resultHandler);
         }finally {

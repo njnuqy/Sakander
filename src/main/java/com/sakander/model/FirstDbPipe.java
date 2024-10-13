@@ -94,6 +94,7 @@ public class FirstDbPipe<E> {
         Field[] fields = clazz.getDeclaredFields();
         Utlis.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getEasySelectSql(this.statement);
+        System.out.println(sql);
         Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeSelectInBatch(sql,clazz, params);
     }
