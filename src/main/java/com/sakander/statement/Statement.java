@@ -21,6 +21,7 @@ public class Statement {
     private String SQL;
     private Integer timeout;
     private Integer fetchSize;
+    private Object[] Parameters;
     public Statement(){
         this.where = new Where();
         this.set = new Set();

@@ -1,6 +1,10 @@
 package com.sakander.statement;
 
 import com.sakander.executor.Executor;
+import com.sakander.executor.parameter.DefaultParameterHandler;
+import com.sakander.executor.parameter.ParameterHandler;
+import com.sakander.executor.resultset.DefaultResultSetHandler;
+import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.expections.ExecutorException;
 import jakarta.annotation.Nullable;
 
@@ -10,22 +14,23 @@ import java.sql.SQLException;
 
 public abstract class BaseStatementHandler implements StatementHandler{
     protected final Executor executor;
-    private final Statement statement;
+    protected final Statement statement;
     protected final String sql;
-
+    protected final ResultSetHandler resultSetHandler;
+    protected final ParameterHandler parameterHandler;
     public BaseStatementHandler(Executor executor,Statement statement,String sql){
         this.executor = executor;
         this.statement = statement;
         this.sql = sql;
+        this.resultSetHandler = new DefaultResultSetHandler();
+        this.parameterHandler = new DefaultParameterHandler();
     }
 
     @Override
-    public PreparedStatement prepare(Connection connection,Integer transactionTimeout,Integer fetchSize) throws SQLException {
+    public PreparedStatement prepare(Connection connection) throws SQLException {
         PreparedStatement statement = null;
         try {
             statement = instantiatePreparedStatement(connection);
-            setPrepareStatementTimeout(statement,transactionTimeout);
-            setFetchSize(statement,fetchSize);
             return statement;
         }catch (SQLException e){
             closeStatement(statement);

@@ -6,13 +6,13 @@ import com.sakander.expections.CacheException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultCache implements Cache {
+public class PerpetualCache implements Cache {
     // TODO id的作用是什么？
     private final String id;
 
     private final Map<Object,Object> cache = new HashMap<>();
 
-    public DefaultCache(String id) {
+    public PerpetualCache(String id) {
         this.id = id;
     }
 
