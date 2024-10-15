@@ -1,11 +1,9 @@
 package com.sakander.executor;
 
 import com.sakander.cache.CacheKey;
-import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.statement.Statement;
 import com.sakander.session.ResultHandler;
 
-import javax.swing.plaf.nimbus.State;
 import java.sql.SQLException;
 import java.util.List;
 

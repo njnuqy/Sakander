@@ -28,6 +28,11 @@ public class DefaultDbPipe implements DbPipe{
         return list.get(0);
     }
 
+    @Override
+    public <T> List<T> selectList(Class<?> type) {
+        return this.selectList(Executor.NO_RESULT_HANDLER,type);
+    }
+
     private <E> List<E> selectList(ResultHandler resultHandler,Class<?> type) {
         String sql = SqlBuilder.getEasySelectSql(this.statement);
         Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());

@@ -2,13 +2,17 @@ package com.sakander.executor.resultset;
 
 import com.sakander.executor.result.DefaultResultContext;
 import com.sakander.executor.result.DefaultResultHandler;
+import com.sakander.executor.type.TypeHandler;
 import com.sakander.mapping.ResultMap;
-import com.sakander.refection.DefaultReflectorFactory;
-import com.sakander.refection.ReflectorFactory;
-import com.sakander.refection.factory.DefaultObejctFactory;
-import com.sakander.refection.factory.ObjectFactory;
+import com.sakander.mapping.ResultMapping;
+import com.sakander.reflection.DefaultReflectorFactory;
+import com.sakander.reflection.ReflectorFactory;
+import com.sakander.reflection.factory.DefaultObejctFactory;
+import com.sakander.reflection.factory.ObjectFactory;
 import com.sakander.session.ResultHandler;
+import com.sakander.utils.Utlis;
 
+import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -74,7 +78,24 @@ public class DefaultResultSetHandler implements ResultSetHandler{
 
     private Object createResultObject(ResultSetWrapper rsw,ResultMap resultMap){
         final Class<?> resultType = resultMap.getType();
-        return objectFactory.create(resultType);
+
+        return createParameterizedResultObject(rsw,resultType,resultMap.getConstructorResultMappings());
+    }
+
+    Object createParameterizedResultObject(ResultSetWrapper rsw, Class<?> resultType, List<ResultMapping> constructorMappings){
+        boolean foundValues = false;
+        final List<Class<?>> constructorArgTypes = new ArrayList<>();
+        final List<Object> constructorArgs = new ArrayList<>();
+        for(ResultMapping constructorMapping : constructorMappings){
+            final Class<?> parameterType = constructorMapping.getJavaType();
+            final String column = constructorMapping.getColumn();
+            final TypeHandler<?> typeHandler = constructorMapping.getTypeHandler();
+            final Object value = typeHandler.getResult(rsw.getResultSet(), column);
+            constructorArgTypes.add(parameterType);
+            constructorArgs.add(value);
+            foundValues = value != null || foundValues;
+        }
+        return foundValues ? objectFactory.create(resultType,constructorArgTypes,constructorArgs) : null;
     }
 
     private ResultSetWrapper getFirstResultSet(PreparedStatement pstmt) throws SQLException {
