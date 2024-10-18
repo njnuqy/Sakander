@@ -116,6 +116,10 @@ public class TypeHandlerRegistry {
         register(char.class, new CharacterTypeHandler());
     }
 
+    public <T> TypeHandler<T> getTypeHandler(Class<T> type) {
+        return getTypeHandler((Type) type, null);
+    }
+
     @SuppressWarnings("unchecked")
     private <T> TypeHandler<T> getTypeHandler(Type type, JdbcType jdbcType){
         Map<JdbcType,TypeHandler<?>> jdbcHandlerMap = getJdbcHandlerMap(type);

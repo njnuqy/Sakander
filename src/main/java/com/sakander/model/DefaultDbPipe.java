@@ -1,12 +1,11 @@
 package com.sakander.model;
 
-import com.sakander.clause.Where;
 import com.sakander.executor.Executor;
 import com.sakander.executor.SimpleExecutor;
 import com.sakander.executor.parameter.DefaultParameterHandler;
 import com.sakander.session.ResultHandler;
 import com.sakander.statement.Statement;
-import com.sakander.utils.Utlis;
+import com.sakander.utils.Utils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -35,7 +34,7 @@ public class DefaultDbPipe implements DbPipe{
 
     private <E> List<E> selectList(ResultHandler resultHandler,Class<?> type) {
         String sql = SqlBuilder.getEasySelectSql(this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         statement.setSQL(sql);
         statement.setParameters(params);
         try{
@@ -44,6 +43,33 @@ public class DefaultDbPipe implements DbPipe{
             throw new RuntimeException("Error query database . Cause: " + e,e);
         }
     }
+
+    @Override
+    public int insert(Object object){
+        String sql = SqlBuilder.getInsertSql(statement,object);
+        Object[] params = Utils.getSqlParams(object);
+        statement.setSQL(sql);
+        statement.setParameters(params);
+        try {
+            return executor.update(statement,object.getClass());
+        }catch (Exception e){
+            throw new RuntimeException("Error update database. Cause: " + e,e);
+        }
+    }
+
+    @Override
+    public int update(Object object){
+        String sql = SqlBuilder.getUpdateSql(statement,object);
+        Object[] params = Utils.getUpdateParams(object);
+        statement.setSQL(sql);
+        statement.setParameters(params);
+        try {
+            return executor.update(statement,object.getClass());
+        }catch (Exception e){
+            throw new RuntimeException("Error update database. Cause: " + e,e);
+        }
+    }
+
 
     public DefaultDbPipe where(String query, Object ...params){
         parameterHandler.setWhere(statement,query,params);

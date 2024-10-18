@@ -3,7 +3,6 @@ package com.sakander.mapping;
 import com.sakander.executor.type.TypeHandler;
 import lombok.Getter;
 
-import java.util.List;
 @Getter
 public class ResultMapping {
     private final String column;
@@ -16,7 +15,4 @@ public class ResultMapping {
         this.typeHandler = typeHandler;
     }
 
-    public List<ResultMapping> getConstructorResultMappings(Class<?> clazz){
-
-    }
 }

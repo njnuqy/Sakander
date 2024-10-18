@@ -28,15 +28,15 @@ public class PreparedStatementHandler extends BaseStatementHandler{
         parameterHandler.setParameters(pstmt,statement.getParameters());
     }
     @Override
-    public int update(PreparedStatement statement) {
-        return 0;
+    public int update(PreparedStatement pstmt) throws SQLException {
+        pstmt.execute();
+        return pstmt.getUpdateCount();
     }
 
     @Override
     public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler) throws SQLException {
         pstmt.execute();
-        List<ResultMapping> constructorResultMappings = new ArrayList<>();
-        ResultMap resultMap = new ResultMap(type,constructorResultMappings);
+        ResultMap resultMap = new ResultMap(type);
         return resultSetHandler.handleResultSets(pstmt,resultMap);
     }
 }

@@ -19,6 +19,7 @@ public abstract class BaseExecutor implements Executor{
     }
     @Override
     public int update(Statement statement,Class<?> type) throws SQLException {
+        // TODO 缓存相关
         return doUpdate(statement,type);
     }
 

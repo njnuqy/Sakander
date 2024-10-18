@@ -3,12 +3,15 @@ package com.sakander.model;
 import com.sakander.annotations.Id;
 import com.sakander.annotations.Column;
 import com.sakander.annotations.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Calendar;
+import java.util.Date;
 
 @Data
 @Table(name = "student")
+@AllArgsConstructor
 public class Student {
     @Id(name = "student_id")
     @Column(name = "student_id")
@@ -18,7 +21,7 @@ public class Student {
     @Column(name = "age", type = "int")
     private int age;
     @Column(name = "birthday", type = "Calendar")
-    private Calendar birthday;
+    private Date birthday;
     public Student(){ super(); }
     public Student(int studentNo, String name, int age){
         this.studentNo = studentNo;

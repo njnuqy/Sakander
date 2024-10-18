@@ -14,7 +14,7 @@ public interface StatementHandler {
 
     void parameterize(PreparedStatement pstmt) throws SQLException;
 
-    int update(PreparedStatement statement);
+    int update(PreparedStatement statement) throws SQLException;
 
     <E> List<E> query(PreparedStatement statement, ResultHandler resultHandler) throws SQLException;
 }

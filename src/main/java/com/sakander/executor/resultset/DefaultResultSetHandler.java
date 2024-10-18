@@ -10,9 +10,7 @@ import com.sakander.reflection.ReflectorFactory;
 import com.sakander.reflection.factory.DefaultObejctFactory;
 import com.sakander.reflection.factory.ObjectFactory;
 import com.sakander.session.ResultHandler;
-import com.sakander.utils.Utlis;
 
-import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

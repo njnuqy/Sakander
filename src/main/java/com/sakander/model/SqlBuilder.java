@@ -7,13 +7,14 @@ import java.util.Map;
 import com.sakander.annotations.Id;
 import com.sakander.clause.*;
 import com.sakander.statement.Statement;
-import com.sakander.utils.Utlis;
+import com.sakander.utils.Utils;
 public class SqlBuilder {
-    public static String getInsertSql(String tableName,Field[] fields){
+    public static String getInsertSql(Statement statement,Object object){
+        Field[] fields = object.getClass().getDeclaredFields();
         StringBuilder insertSql = new StringBuilder();
-        insertSql.append("insert into ").append(tableName).append(" (");
+        insertSql.append("insert into ").append(statement.getTable().getTableName()).append(" (");
         for (Field field : fields) {
-            insertSql.append(Utlis.getColumnName(field)).append(",");
+            insertSql.append(Utils.getColumnName(field)).append(",");
         }
         insertSql.deleteCharAt(insertSql.length()-1);
         insertSql.append(") values (");
@@ -28,7 +29,7 @@ public class SqlBuilder {
         StringBuilder insertInBatchSql = new StringBuilder();
         insertInBatchSql.append("insert into ").append(statement.getTable().getTableName()).append(" (");
         for (Field field : fields) {
-            insertInBatchSql.append(Utlis.getColumnName(field)).append(",");
+            insertInBatchSql.append(Utils.getColumnName(field)).append(",");
         }
         insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
         insertInBatchSql.append(") values ");
@@ -43,13 +44,13 @@ public class SqlBuilder {
         insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
         return insertInBatchSql.toString();
     }
-    public static<E> String getUpdateSql(E element,Object[] params){
-        Class clazz = element.getClass();
-        String tableName = Utlis.getTableName(clazz);
+    public static<E> String getUpdateSql(Statement statement,Object object){
+        Class clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
         StringBuilder updateSql = new StringBuilder();
-        updateSql.append("update ").append(tableName).append(" set ");
+        updateSql.append("update ").append(statement.getTable().getTableName()).append(" set ");
         String idName = "";
+        Object[] params = new Object[fields.length];
         int index = 0; // 记录参数的位置
         for(int i = 0 ; i < fields.length ; i++){
             Field field = fields[i];
@@ -58,22 +59,22 @@ public class SqlBuilder {
             if(field.isAnnotationPresent(Id.class)){
                 idName = field.getAnnotation(Id.class).name();
                 try {
-                    params[params.length - 1] = field.get(element);
+                    params[params.length - 1] = field.get(object);
                     if(params[params.length - 1] == null) {
-                        throw new RuntimeException(element + "没有Id属性");
+                        throw new RuntimeException(object + "没有Id属性");
                     }
                 }catch (IllegalAccessException e){
                     System.out.println(e.getMessage());
-                    System.out.println("获取" + element + "属性值失败");
+                    System.out.println("获取" + object + "属性值失败");
                 }
             }
-            String columnName = Utlis.getColumnName(fields[i]);
+            String columnName = Utils.getColumnName(fields[i]);
             updateSql.append(" ").append(columnName).append(" = ? ,");
             try {
-                params[index++] = fields[i].get(element);
+                params[index++] = fields[i].get(object);
             }catch (IllegalAccessException e){
                 System.out.println(e.getMessage());
-                System.out.println("获取" +  element + "的属性值失败");
+                System.out.println("获取" +  object + "的属性值失败");
             }
         }
         updateSql.deleteCharAt(updateSql.length() - 1);
@@ -83,7 +84,7 @@ public class SqlBuilder {
     }
     public static<E> String getUpdateByParamsSql(E element,Statement statement){
         Class clazz = element.getClass();
-        String tableName = Utlis.getTableName(clazz);
+        String tableName = Utils.getTableName(clazz);
         StringBuilder sql = new StringBuilder();
         sql.append("update ").append(tableName).append(" set ");
         Map<String, Object> setParams = statement.getSet().getParams();

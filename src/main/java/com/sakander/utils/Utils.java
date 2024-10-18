@@ -2,12 +2,12 @@ package com.sakander.utils;
 
 import com.sakander.annotations.Column;
 import com.sakander.annotations.Table;
-import com.sakander.model.SqlBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-public class Utlis {
+@Slf4j
+public class Utils {
     public static String toSnakeCase(String camelCase) {
         // 使用正则表达式将每个大写字母前（如果该大写字母不是字符串的第一个字符）插入一个下划线，然后转换为小写
         return camelCase.replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
@@ -37,7 +37,7 @@ public class Utlis {
         if(isPresent){
             return field.getAnnotation(Column.class).name();
         }
-        return Utlis.toSnakeCase(field.getName());
+        return Utils.toSnakeCase(field.getName());
     }
     public static <E> String getTableName(Class<E> clazz){
         boolean existTableAnno = clazz.isAnnotationPresent(Table.class);
@@ -45,8 +45,8 @@ public class Utlis {
             Table tableAnno = clazz.getAnnotation(Table.class);
             return tableAnno.name();
         }
-        System.out.println(Utlis.toSnakeCase(clazz.getSimpleName()));
-        return Utlis.toSnakeCase(clazz.getSimpleName());
+        System.out.println(Utils.toSnakeCase(clazz.getSimpleName()));
+        return Utils.toSnakeCase(clazz.getSimpleName());
     }
     public static<E> Object[] getListParams(List<E> elements,int length){
         Object[] params = new Object[length];
@@ -63,17 +63,38 @@ public class Utlis {
         }
         return params;
     }
-    public static<E> Object[] getSqlParams(E element,Field[] fields){
+    public static<E> Object[] getSqlParams(Object object){
+        Field[] fields = object.getClass().getDeclaredFields();
         Object[] params = new Object[fields.length];
         for(int i = 0 ; i < fields.length ; i++){
             fields[i].setAccessible(true);
             try {
-                params[i] = fields[i].get(element);
+                params[i] = fields[i].get(object);
             }catch (IllegalAccessException e) {
-                System.out.println(e.getMessage());
-                System.out.println("获取" + element + "的属性值失败");
-                e.printStackTrace();
+                log.info("获取{}的属性值失败", object);
+                log.warn("获取{}的属性值失败", object);
             }
+        }
+        return params;
+    }
+
+    public static<E> Object[] getUpdateParams(Object object){
+        Field[] fields = object.getClass().getDeclaredFields();
+        Object[] params = new Object[fields.length + 1];
+        for(int i = 0 ; i < fields.length ; i++){
+            fields[i].setAccessible(true);
+            try {
+                params[i] = fields[i].get(object);
+            }catch (IllegalAccessException e) {
+                log.info("获取{}的属性值失败", object);
+                log.warn("获取{}的属性值失败", object);
+            }
+        }
+        try {
+            params[fields.length] = fields[0].get(object);
+        }catch (IllegalAccessException e) {
+            log.info("获取{}的属性值失败", object);
+            log.warn("获取{}的属性值失败", object);
         }
         return params;
     }

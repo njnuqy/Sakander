@@ -11,12 +11,12 @@ import java.util.*;
 @SpringBootTest(classes = Sakander.class)
 class SakanderApplicationTests {
     private static final FirstDbPipe<Student> DEFAULT_DB_PIPE = FirstDbPipe.create(new Student());
-    @Test
-    void addTest(){
-        Student student = null;
-        student = new Student(101,"qy",123);
-        DEFAULT_DB_PIPE.add(student);
-    }
+//    @Test
+//    void addTest(){
+//        Student student = null;
+//        student = new Student(101,"qy",123);
+//        DEFAULT_DB_PIPE.add(student);
+//    }
     @Test
     void addInBatchTest(){
         List<Student> students = new ArrayList<>();
@@ -24,11 +24,11 @@ class SakanderApplicationTests {
         students.add(new Student(13,"321",123));
         DEFAULT_DB_PIPE.addInBatch(students);
     }
-    @Test
-    void updateTest(){
-        Student student = new Student(11,"qyy",123);
-        DEFAULT_DB_PIPE.update(student);
-    }
+//    @Test
+//    void updateTest(){
+//        Student student = new Student(11,"qyy",123);
+//        DEFAULT_DB_PIPE.update(student);
+//    }
     @Test
     void updateByParamsTest(){
         Map<String, Object> map = new HashMap<>();

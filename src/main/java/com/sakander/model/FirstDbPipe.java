@@ -2,7 +2,7 @@ package com.sakander.model;
 
 import com.sakander.clause.*;
 import com.sakander.statement.Statement;
-import com.sakander.utils.Utlis;
+import com.sakander.utils.Utils;
 import com.sakander.utils.JdbcUtils;
 import lombok.Data;
 
@@ -20,7 +20,7 @@ public class FirstDbPipe<E> {
     public static <E> FirstDbPipe<E> create(E element){
         FirstDbPipe<E> firstDbPipe = new FirstDbPipe<>();
         firstDbPipe.element = element;
-        firstDbPipe.statement.getTable().setTableName(Utlis.getTableName(element.getClass()));
+        firstDbPipe.statement.getTable().setTableName(Utils.getTableName(element.getClass()));
         return firstDbPipe;
     }
     // sql
@@ -32,40 +32,40 @@ public class FirstDbPipe<E> {
         return JdbcUtils.excuteUpdate(sql);
     }
     // add sql
-    public int add(E element){
-        Utlis.judgeIfNull(element);
-        Class clazz = element.getClass();
-        String tableName = Utlis.getTableName(clazz);
-        Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(element,fields);
-        String sql = SqlBuilder.getInsertSql(tableName,fields);
-        Object[] params = Utlis.getSqlParams(element,fields);
-        return JdbcUtils.excuteUpdate(sql,params);
-    }
+//    public int add(E element){
+//        Utils.judgeIfNull(element);
+//        Class clazz = element.getClass();
+//        String tableName = Utils.getTableName(clazz);
+//        Field[] fields = clazz.getDeclaredFields();
+//        Utils.judgeIfHasFields(element,fields);
+//        String sql = SqlBuilder.getInsertSql(tableName,fields);
+//        Object[] params = Utils.getSqlParams(element,fields);
+//        return JdbcUtils.excuteUpdate(sql,params);
+//    }
     public int addInBatch(List<E> elements){
-        elements.forEach(Utlis::judgeIfNull);
+        elements.forEach(Utils::judgeIfNull);
         Class clazz = elements.get(0).getClass();
-        this.statement.getTable().setTableName(Utlis.getTableName(clazz));
+        this.statement.getTable().setTableName(Utils.getTableName(clazz));
         Field[] fields = clazz.getDeclaredFields();
         String sql = SqlBuilder.getInsertInBatchSql(elements,this.statement,fields);
-        Object[] params = Utlis.getListParams(elements,elements.size() * fields.length);
+        Object[] params = Utils.getListParams(elements,elements.size() * fields.length);
         return JdbcUtils.excuteUpdate(sql,params);
     }
     // update sql
-    public int update(E element){
-        Utlis.judgeIfNull(element);
-        Class clazz = element.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(element,fields);
-        Object[] params = new Object[fields.length];
-        String sql = SqlBuilder.getUpdateSql(element,params);
-        return JdbcUtils.excuteUpdate(sql,params);
-    }
+//    public int update(E element){
+//        Utils.judgeIfNull(element);
+//        Class clazz = element.getClass();
+//        Field[] fields = clazz.getDeclaredFields();
+//        Utils.judgeIfHasFields(element,fields);
+//        Object[] params = new Object[fields.length];
+//        String sql = SqlBuilder.getUpdateSql(element,params);
+//        return JdbcUtils.excuteUpdate(sql,params);
+//    }
     public int updateByParams(E element){
-        Utlis.judgeIfNull(element);
+        Utils.judgeIfNull(element);
         Map<String, Object> setMap = this.statement.getSet().getParams();
         Object[] setParams = setMap.values().toArray();
-        Object[] params = Utlis.mergeArrays(setParams,this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(setParams,this.statement.getWhere().getParams());
         String sql = SqlBuilder.getUpdateByParamsSql(element,this.statement);
         return JdbcUtils.excuteUpdate(sql,params);
     }
@@ -73,7 +73,7 @@ public class FirstDbPipe<E> {
     public void delete(){
         String sql = SqlBuilder.getDeleteSql(this.element,this.statement);
         System.out.println("deleteSql = " + sql);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         for (Object param : params) {
             System.out.println(param);
         }
@@ -84,51 +84,51 @@ public class FirstDbPipe<E> {
     public Object select(){
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getEasySelectSql(this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeSelectOne(sql,clazz, params);
     }
     public <T> List<T> easySelectInBatch(){
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getEasySelectSql(this.statement);
         System.out.println(sql);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeSelectInBatch(sql,clazz, params);
     }
     public <T> List<T> complexSelectInBatch(){
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getComplexSelectSql(this.statement);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeSelectInBatch(sql,clazz, params);
     }
     public List<Map<String,Object>> selectWithColumns(String ...columns){
         Field[] fields = this.element.getClass().getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getSelectWithColumnsSql(this.statement,columns);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeSelectWithColumns(sql,columns, params);
     }
     public List<Map<String, Object>> selectWithAggregate(String ...cols) {
-        Utlis.judgeIfNull(this.element);
+        Utils.judgeIfNull(this.element);
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getAggregateSql(this.element,this.statement,cols);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         return JdbcUtils.executeAggregate(sql,params);
     }
     public List<Map<String, Object>> selectWithJoin(String ...cols){
-        Utlis.judgeIfNull(this.element);
+        Utils.judgeIfNull(this.element);
         Class clazz = this.element.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        Utlis.judgeIfHasFields(this.element,fields);
+        Utils.judgeIfHasFields(this.element,fields);
         String sql = SqlBuilder.getJoinSql(this.element,this.statement,cols);
-        Object[] params = Utlis.mergeArrays(this.statement.getWhere().getParams());
+        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
         System.out.println(sql);
         return JdbcUtils.executeAggregate(sql,params);
     }
