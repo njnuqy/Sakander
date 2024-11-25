@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PerpetualCache implements Cache {
-    // TODO id的作用是什么？
     private final String id;
 
     private final Map<Object,Object> cache = new HashMap<>();

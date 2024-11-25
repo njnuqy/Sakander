@@ -1,22 +1,23 @@
 package com.sakander.statement;
 
 import com.sakander.executor.Executor;
-import com.sakander.executor.result.DefaultResultHandler;
-import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.mapping.ResultMap;
-import com.sakander.mapping.ResultMapping;
 import com.sakander.session.ResultHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PreparedStatementHandler extends BaseStatementHandler{
 
+
     public PreparedStatementHandler(Executor executor, Statement statement, String sql,Class type) {
-        super(executor, statement,type);
+        super(executor,statement,type);
+    }
+
+    public PreparedStatementHandler(Executor executor, Statement statement) {
+        super(executor,statement);
     }
 
     @Override
@@ -37,6 +38,18 @@ public class PreparedStatementHandler extends BaseStatementHandler{
     public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler) throws SQLException {
         pstmt.execute();
         ResultMap resultMap = new ResultMap(type);
+        return resultSetHandler.handleResultSets(pstmt,resultMap);
+    }
+
+    public <E> List<E> queryMapList(PreparedStatement pstmt, ResultHandler resultHandler,String ...columns) throws SQLException {
+        pstmt.execute();
+        ResultMap resultMap = new ResultMap(type,columns);
+        return resultSetHandler.handleResultSets(pstmt,resultMap);
+    }
+
+    public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler,String ...columns) throws SQLException {
+        pstmt.execute();
+        ResultMap resultMap = new ResultMap(columns);
         return resultSetHandler.handleResultSets(pstmt,resultMap);
     }
 }

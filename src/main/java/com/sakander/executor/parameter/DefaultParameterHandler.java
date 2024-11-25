@@ -1,6 +1,7 @@
 package com.sakander.executor.parameter;
 
-import com.sakander.clause.Table;
+import com.sakander.clause.Join;
+import com.sakander.clause.On;
 import com.sakander.clause.Where;
 import com.sakander.statement.Statement;
 
@@ -27,8 +28,15 @@ public class DefaultParameterHandler implements ParameterHandler{
     }
 
     @Override
-    public void setFrom(Statement statement,String from) {
-        Table table = new Table(from);
-        statement.setTable(table);
+    public void setJoin(Statement statement, String direction, String table) {
+        Join join = new Join(direction,table);
+        statement.setJoin(join);
     }
+
+    @Override
+    public void setOn(Statement statement, String... ons) {
+        On on = new On(ons);
+        statement.setOn(on);
+    }
+
 }

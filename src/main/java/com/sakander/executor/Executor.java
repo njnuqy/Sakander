@@ -16,6 +16,10 @@ public interface Executor {
 
     <E> List<E> query(Statement statement,ResultHandler resultHandler,Class<?> type) throws SQLException;
 
+    <E> List<E> query(Statement statement,ResultHandler resultHandler,Class<?> type,String ...columns) throws SQLException;
+
+    <E> List<E> query(Statement statement,ResultHandler resultHandler,String ...columns) throws SQLException;
+
     CacheKey createCacheKey(Statement statement);
 
 

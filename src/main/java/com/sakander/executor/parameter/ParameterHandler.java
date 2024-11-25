@@ -12,5 +12,7 @@ public interface ParameterHandler {
 
     void setWhere(Statement statement,String query, Object ...params);
 
-    void setFrom(Statement statement,String from);
+    void setJoin(Statement statement,String direction,String table);
+
+    void setOn(Statement statement,String ...ons);
 }

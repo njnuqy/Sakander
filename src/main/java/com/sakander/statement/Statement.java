@@ -36,4 +36,22 @@ public class Statement {
         this.on = new On();
         this.Parameters = new Object[0];
     }
+    public Statement(String tableName){
+        this.where = new Where();
+        this.set = new Set();
+        this.table = new Table();
+        this.rowRestriction = new RowRestriction();
+        this.groupBy = new GroupBy();
+        this.having = new Having();
+        this.count = new Count();
+        this.sum = new Sum();
+        this.max = new Max();
+        this.min = new Min();
+        this.average = new Average();
+        this.join = new Join();
+        this.on = new On();
+        this.Parameters = new Object[0];
+        this.table.setTableName(tableName);
+    }
+
 }

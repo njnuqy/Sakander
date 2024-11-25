@@ -16,7 +16,7 @@ public class Where {
     }
 
     public Where(String query,Object[] params){
-        this.query = query;
+        this.query = "where " + query;
         this.params = params;
     }
 }

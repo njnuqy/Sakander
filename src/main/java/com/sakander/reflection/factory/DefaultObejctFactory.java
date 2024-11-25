@@ -12,23 +12,30 @@ public class DefaultObejctFactory implements ObjectFactory, Serializable {
 
     @Override
     public <T> T create(Class<T> type) {
-        return create(type,null,null);
+        return create(type,null,null,null);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T create(Class<T> type,List<Class<?>> constructorArgTypes,List<Object> constructorArgs) {
+    public <T> T create(Class<T> type,List<String> columnNames,List<Class<?>> constructorArgTypes,List<Object> constructorArgs) {
         Class<?> classToCreate = resolveInterface(type);
-        return (T) instantiateClass(classToCreate,constructorArgTypes,constructorArgs);
+        return (T) instantiateClass(classToCreate,columnNames,constructorArgTypes,constructorArgs);
     }
 
-    private <T> T instantiateClass(Class<T> type,List<Class<?>> constructorArgTypes,List<Object> constructorArgs){
+    private <T> T instantiateClass(Class<T> type,List<String> columnNames,List<Class<?>> constructorArgTypes,List<Object> constructorArgs){
         try {
             Constructor<T> constructor;
             if (constructorArgTypes == null || constructorArgs == null) {
                 constructor = type.getDeclaredConstructor();
                 constructor.setAccessible(true);
                 return constructor.newInstance();
+            }
+            if(type == HashMap.class){
+                Map<String,Object> map = new HashMap<>();
+                for(int i = 0 ; i < columnNames.size() ; i ++){
+                    map.put(columnNames.get(i),constructorArgs.get(i));
+                }
+                return (T) map;
             }
             constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[0]));
             constructor.setAccessible(true);

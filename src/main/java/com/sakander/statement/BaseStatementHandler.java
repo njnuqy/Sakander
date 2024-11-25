@@ -6,6 +6,7 @@ import com.sakander.executor.parameter.ParameterHandler;
 import com.sakander.executor.resultset.DefaultResultSetHandler;
 import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.expections.ExecutorException;
+import com.sakander.session.ResultHandler;
 import jakarta.annotation.Nullable;
 
 import java.sql.Connection;
@@ -20,11 +21,20 @@ public abstract class BaseStatementHandler implements StatementHandler{
     protected final ResultSetHandler resultSetHandler;
     protected final ParameterHandler parameterHandler;
 
-    public BaseStatementHandler(Executor executor,Statement statement,Class<?> type){
+    public BaseStatementHandler(Executor executor, Statement statement,Class<?> type){
         this.executor = executor;
         this.statement = statement;
         this.sql = statement.getSQL();
         this.type = type;
+        this.resultSetHandler = new DefaultResultSetHandler();
+        this.parameterHandler = new DefaultParameterHandler();
+    }
+
+    public BaseStatementHandler(Executor executor, Statement statement){
+        this.executor = executor;
+        this.statement = statement;
+        this.sql = statement.getSQL();
+        this.type = null;
         this.resultSetHandler = new DefaultResultSetHandler();
         this.parameterHandler = new DefaultParameterHandler();
     }
@@ -42,17 +52,9 @@ public abstract class BaseStatementHandler implements StatementHandler{
             closeStatement(statement);
             throw new ExecutorException("Error preparing statement. Cause:" + e, e);
         }
-
     }
 
     protected abstract PreparedStatement instantiatePreparedStatement(Connection connection) throws SQLException;
-
-    protected void setPrepareStatementTimeout(PreparedStatement statement,Integer transactionTimeout) throws SQLException {
-        if(transactionTimeout == null){
-            return;
-        }
-        statement.setQueryTimeout(transactionTimeout);
-    }
 
     protected void closeStatement(PreparedStatement statement){
         try {
@@ -63,10 +65,5 @@ public abstract class BaseStatementHandler implements StatementHandler{
             // ignore
         }
     }
-    protected void setFetchSize(PreparedStatement statement,Integer fetchSize) throws SQLException {
-        if(fetchSize == null){
-            return;
-        }
-        statement.setFetchSize(fetchSize);
-    }
+
 }

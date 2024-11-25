@@ -19,15 +19,13 @@ public abstract class BaseExecutor implements Executor{
     }
     @Override
     public int update(Statement statement,Class<?> type) throws SQLException {
-        // TODO 缓存相关
+        localCache.clear();
         return doUpdate(statement,type);
     }
 
     @Override
     public CacheKey createCacheKey(Statement statement) {
         CacheKey cacheKey = new CacheKey();
-//        cacheKey.update(statement.getRowRestriction().getOffset());
-//        cacheKey.update(statement.getRowRestriction().getLimit());
         cacheKey.update(statement.getSQL());
         cacheKey.update(statement);
         return cacheKey;
@@ -38,7 +36,6 @@ public abstract class BaseExecutor implements Executor{
         CacheKey key = createCacheKey(statement);
         return query(statement,resultHandler,key,type);
     }
-
     @SuppressWarnings("unchecked")
     @Override
     public <E> List<E> query(Statement statement, ResultHandler resultHandler, CacheKey cacheKey,Class<?> type) throws SQLException {
@@ -50,7 +47,29 @@ public abstract class BaseExecutor implements Executor{
         return list;
     }
 
-    private <E> List<E> queryFromDatabase(Statement statement,ResultHandler resultHandler,CacheKey cacheKey,Class<?> type) throws SQLException {
+    @Override
+    public <E> List<E> query(Statement statement, ResultHandler resultHandler, Class<?> type, String... columns) throws SQLException {
+        CacheKey cacheKey = createCacheKey(statement);
+        List<E> list = (List<E>) localCache.getObejct(cacheKey);
+        if(list != null){
+            return list;
+        }
+        list = queryFromDatabase(statement,resultHandler,cacheKey,type,columns);
+        return list;
+    }
+
+    @Override
+    public <E> List<E> query(Statement statement, ResultHandler resultHandler,String ...columns) throws SQLException {
+        CacheKey cacheKey = createCacheKey(statement);
+        List<E> list = (List<E>) localCache.getObejct(cacheKey);
+        if(list != null){
+            return list;
+        }
+        list = queryFromDatabase(statement,resultHandler,cacheKey,columns);
+        return list;
+    }
+
+    private <E> List<E> queryFromDatabase(Statement statement, ResultHandler resultHandler, CacheKey cacheKey, Class<?> type) throws SQLException {
         List<E> list;
         try {
             list = doQuery(statement,resultHandler,type);
@@ -61,7 +80,33 @@ public abstract class BaseExecutor implements Executor{
         return list;
     }
 
+    private <E> List<E> queryFromDatabase(Statement statement, ResultHandler resultHandler, CacheKey cacheKey, Class<?> type,String ...columns) throws SQLException {
+        List<E> list;
+        try {
+            list = doQuery(statement,resultHandler,type,columns);
+        }finally {
+            localCache.removeObejct(cacheKey);
+        }
+        localCache.putObject(cacheKey,list);
+        return list;
+    }
+
+    private <E> List<E> queryFromDatabase(Statement statement, ResultHandler resultHandler, CacheKey cacheKey,String ...columns) throws SQLException {
+        List<E> list;
+        try {
+            list = doQuery(statement,resultHandler,columns);
+        }finally {
+            localCache.removeObejct(cacheKey);
+        }
+        localCache.putObject(cacheKey,list);
+        return list;
+    }
+
     protected abstract int doUpdate(Statement statement,Class<?> type) throws SQLException;
 
     protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException;
+
+    protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type,String ...columns) throws SQLException;
+
+    protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,String ...columns) throws SQLException;
 }

@@ -41,6 +41,30 @@ public class SimpleExecutor extends BaseExecutor{
 
     }
 
+    @Override
+    protected <E> List<E> doQuery(Statement statement, ResultHandler resultHandler, Class<?> type, String... columns) throws SQLException {
+        PreparedStatement pstmt = null;
+        try {
+            StatementHandler handler = new PreparedStatementHandler(this,statement,statement.getSQL(),type);
+            pstmt = prepareStatement(handler);
+            return handler.queryMapList(pstmt,resultHandler,columns);
+        }finally {
+            closeStatement(pstmt);
+        }
+    }
+
+    @Override
+    protected <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,String ...columns) throws SQLException {
+        PreparedStatement pstmt = null;
+        try {
+            StatementHandler handler = new PreparedStatementHandler(this,statement);
+            pstmt = prepareStatement(handler);
+            return handler.query(pstmt,resultHandler,columns);
+        }finally {
+            closeStatement(pstmt);
+        }
+    }
+
     protected Connection getConnection(){
         Connection conn = null;
         try {
@@ -67,5 +91,6 @@ public class SimpleExecutor extends BaseExecutor{
             }
         }
     }
+
 
 }

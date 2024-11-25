@@ -1,8 +1,6 @@
 package com.sakander.statement;
 
-import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.session.ResultHandler;
-import jakarta.annotation.Nullable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,4 +15,8 @@ public interface StatementHandler {
     int update(PreparedStatement statement) throws SQLException;
 
     <E> List<E> query(PreparedStatement statement, ResultHandler resultHandler) throws SQLException;
+
+    <E> List<E> query(PreparedStatement statement, ResultHandler resultHandler,String ...columns) throws SQLException;
+
+    <E> List<E> queryMapList(PreparedStatement statement, ResultHandler resultHandler,String ...columns) throws SQLException;
 }

@@ -30,7 +30,7 @@ public class DefaultResultSetHandler implements ResultSetHandler{
     }
     // 已经执行过了 execute 方法
     @Override
-    public List<Object> handleResultSets(PreparedStatement pstmt,ResultMap resultMap) throws SQLException {
+    public List<Object> handleResultSets(PreparedStatement pstmt, ResultMap resultMap) throws SQLException {
         final List<Object> multipleResults = new ArrayList<>();
         ResultSetWrapper rsw = getFirstResultSet(pstmt);
         handleResultSet(rsw, resultMap,multipleResults);
@@ -84,6 +84,7 @@ public class DefaultResultSetHandler implements ResultSetHandler{
         boolean foundValues = false;
         final List<Class<?>> constructorArgTypes = new ArrayList<>();
         final List<Object> constructorArgs = new ArrayList<>();
+        final List<String> columnNames = new ArrayList<>();
         for(ResultMapping constructorMapping : constructorMappings){
             final Class<?> parameterType = constructorMapping.getJavaType();
             final String column = constructorMapping.getColumn();
@@ -91,9 +92,10 @@ public class DefaultResultSetHandler implements ResultSetHandler{
             final Object value = typeHandler.getResult(rsw.getResultSet(), column);
             constructorArgTypes.add(parameterType);
             constructorArgs.add(value);
+            columnNames.add(column);
             foundValues = value != null || foundValues;
         }
-        return foundValues ? objectFactory.create(resultType,constructorArgTypes,constructorArgs) : null;
+        return foundValues ? objectFactory.create(resultType,columnNames,constructorArgTypes,constructorArgs) : null;
     }
 
     private ResultSetWrapper getFirstResultSet(PreparedStatement pstmt) throws SQLException {
@@ -122,4 +124,5 @@ public class DefaultResultSetHandler implements ResultSetHandler{
     private List<Object> collapseSingleResultList(List<Object> multipleResults) {
         return multipleResults.size() == 1 ? (List<Object>) multipleResults.get(0) : multipleResults;
     }
+
 }
