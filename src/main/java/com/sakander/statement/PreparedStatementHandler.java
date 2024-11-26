@@ -16,6 +16,10 @@ public class PreparedStatementHandler extends BaseStatementHandler{
         super(executor,statement,type);
     }
 
+    public PreparedStatementHandler(Executor executor, UpdateCondition condition, String sql,Class type) {
+        super(executor,condition,type);
+    }
+
     public PreparedStatementHandler(Executor executor, Statement statement) {
         super(executor,statement);
     }
@@ -28,6 +32,12 @@ public class PreparedStatementHandler extends BaseStatementHandler{
     public void parameterize(PreparedStatement pstmt) throws SQLException {
         parameterHandler.setParameters(pstmt,statement.getParameters());
     }
+
+    @Override
+    public void newParameterize(PreparedStatement pstmt) throws SQLException {
+        parameterHandler.setParameters(pstmt,updateCondition.getParameters());
+    }
+
     @Override
     public int update(PreparedStatement pstmt) throws SQLException {
         pstmt.execute();

@@ -2,10 +2,7 @@ package com.sakander.executor;
 
 import com.sakander.config.DbSource;
 import com.sakander.session.ResultHandler;
-import com.sakander.statement.BaseStatementHandler;
-import com.sakander.statement.PreparedStatementHandler;
-import com.sakander.statement.Statement;
-import com.sakander.statement.StatementHandler;
+import com.sakander.statement.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -27,6 +24,17 @@ public class SimpleExecutor extends BaseExecutor{
         }
     }
 
+    @Override
+    protected int doUpdate(UpdateCondition condition, Class<?> type) throws SQLException {
+        PreparedStatement pstmt = null;
+        try {
+            StatementHandler handler = new PreparedStatementHandler(this,condition,condition.getSQL(),type);
+            pstmt = prepareStatement(handler);
+            return handler.update(pstmt);
+        } finally {
+            closeStatement(pstmt);
+        }
+    }
 
     @Override
     protected <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException {
@@ -79,7 +87,7 @@ public class SimpleExecutor extends BaseExecutor{
         PreparedStatement statement;
         Connection connection = getConnection();
         statement = handler.prepare(connection);
-        handler.parameterize(statement);
+        handler.newParameterize(statement);
         return statement;
     }
     protected void closeStatement(PreparedStatement statement){

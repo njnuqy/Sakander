@@ -16,6 +16,7 @@ import java.sql.SQLException;
 public abstract class BaseStatementHandler implements StatementHandler{
     protected final Executor executor;
     protected final Statement statement;
+    protected UpdateCondition updateCondition;
     protected final String sql;
     protected final Class<?> type;
     protected final ResultSetHandler resultSetHandler;
@@ -25,6 +26,16 @@ public abstract class BaseStatementHandler implements StatementHandler{
         this.executor = executor;
         this.statement = statement;
         this.sql = statement.getSQL();
+        this.type = type;
+        this.resultSetHandler = new DefaultResultSetHandler();
+        this.parameterHandler = new DefaultParameterHandler();
+    }
+
+    public BaseStatementHandler(Executor executor, UpdateCondition updateCondition,Class<?> type){
+        this.executor = executor;
+        this.statement = new Statement();
+        this.updateCondition = updateCondition;
+        this.sql = updateCondition.getSQL();
         this.type = type;
         this.resultSetHandler = new DefaultResultSetHandler();
         this.parameterHandler = new DefaultParameterHandler();

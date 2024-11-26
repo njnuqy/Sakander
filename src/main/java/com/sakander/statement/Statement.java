@@ -4,7 +4,7 @@ import com.sakander.clause.*;
 import lombok.Data;
 
 @Data
-public class Statement {
+public class Statement{
     private Where where;
     private Set set;
     private Table table;

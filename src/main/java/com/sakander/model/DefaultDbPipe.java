@@ -75,19 +75,6 @@ public class DefaultDbPipe implements DbPipe{
         }
     }
 
-    // TODO 分离statement
-    private <E> List<E> selectList(Statement statement,Class<?> type) {
-        String sql = SqlBuilder.getSelectSql(statement);
-        Object[] params = Utils.mergeArrays(statement.getWhere().getParams());
-        System.out.println(sql);
-        statement.setSQL(sql);
-        statement.setParameters(params);
-        try{
-            return executor.query(statement,null,type);
-        }catch (Exception e){
-            throw new RuntimeException("Error query database . Cause: " + e,e);
-        }
-    }
 
     private <E> List<E> selectMapList(ResultHandler resultHandler,Class<?> type,String ...columns) {
         String sql = SqlBuilder.getSelectWithColumnsSql(this.statement,columns);
@@ -106,7 +93,9 @@ public class DefaultDbPipe implements DbPipe{
         String sql = SqlBuilder.getInsertSql(statement,object);
         Object[] params = Utils.getSqlParams(object);
         statement.setSQL(sql);
-        statement.setParameters(params);
+        for (Object param : params) {
+            System.out.println(param);
+        }
         try {
             return executor.update(statement,object.getClass());
         }catch (Exception e){

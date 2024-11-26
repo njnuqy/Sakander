@@ -47,7 +47,7 @@ public class DefaultDbPipeTest {
     }
     @Test
     void insertTest(){
-        Student student = new Student(1234,"1234",1234);
+        Student student = new Student(422,"1234",1234);
         int insert = defaultDbPipe.insert(student);
     }
 

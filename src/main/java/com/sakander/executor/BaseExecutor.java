@@ -3,7 +3,9 @@ package com.sakander.executor;
 import com.sakander.cache.CacheKey;
 import com.sakander.cache.impl.PerpetualCache;
 import com.sakander.session.ResultHandler;
+import com.sakander.statement.Condition;
 import com.sakander.statement.Statement;
+import com.sakander.statement.UpdateCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,12 @@ public abstract class BaseExecutor implements Executor{
     public int update(Statement statement,Class<?> type) throws SQLException {
         localCache.clear();
         return doUpdate(statement,type);
+    }
+
+    @Override
+    public int update(UpdateCondition condition, Class<?> type) throws SQLException {
+        localCache.clear();
+        return doUpdate(condition,type);
     }
 
     @Override
@@ -103,6 +111,8 @@ public abstract class BaseExecutor implements Executor{
     }
 
     protected abstract int doUpdate(Statement statement,Class<?> type) throws SQLException;
+
+    protected abstract int doUpdate(UpdateCondition condition,Class<?> type) throws SQLException;
 
     protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException;
 
