@@ -1,9 +1,7 @@
 package com.sakander.executor.parameter;
 
-import com.sakander.statement.Condition;
-import com.sakander.statement.QueryCondition;
-import com.sakander.statement.Statement;
-import com.sakander.statement.UpdateCondition;
+import com.sakander.condition.Condition;
+import com.sakander.condition.UpdateCondition;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

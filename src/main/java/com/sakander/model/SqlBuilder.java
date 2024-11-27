@@ -2,13 +2,12 @@ package com.sakander.model;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 
 import com.sakander.annotations.Id;
 import com.sakander.clause.*;
-import com.sakander.statement.QueryCondition;
-import com.sakander.statement.Statement;
-import com.sakander.statement.UpdateCondition;
+import com.sakander.condition.QueryCondition;
+import com.sakander.condition.Statement;
+import com.sakander.condition.UpdateCondition;
 import com.sakander.utils.Utils;
 public class SqlBuilder {
     public static String getInsertSql(Statement statement,Object object){

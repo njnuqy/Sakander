@@ -1,11 +1,10 @@
 package com.sakander.executor;
 
 import com.sakander.cache.CacheKey;
-import com.sakander.statement.Condition;
-import com.sakander.statement.QueryCondition;
-import com.sakander.statement.Statement;
+import com.sakander.condition.QueryCondition;
+import com.sakander.condition.Statement;
 import com.sakander.session.ResultHandler;
-import com.sakander.statement.UpdateCondition;
+import com.sakander.condition.UpdateCondition;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -29,5 +28,5 @@ public interface Executor {
 
     CacheKey createCacheKey(Statement statement);
 
-
+    CacheKey createCacheKey(QueryCondition condition);
 }

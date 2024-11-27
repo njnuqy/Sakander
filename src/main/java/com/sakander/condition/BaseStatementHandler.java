@@ -1,4 +1,4 @@
-package com.sakander.statement;
+package com.sakander.condition;
 
 import com.sakander.executor.Executor;
 import com.sakander.executor.parameter.DefaultParameterHandler;
@@ -6,8 +6,6 @@ import com.sakander.executor.parameter.ParameterHandler;
 import com.sakander.executor.resultset.DefaultResultSetHandler;
 import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.expections.ExecutorException;
-import com.sakander.session.ResultHandler;
-import jakarta.annotation.Nullable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +15,7 @@ public abstract class BaseStatementHandler implements StatementHandler{
     protected final Executor executor;
     protected final Statement statement;
     protected UpdateCondition updateCondition;
+    protected QueryCondition queryCondition;
     protected final String sql;
     protected final Class<?> type;
     protected final ResultSetHandler resultSetHandler;
@@ -36,6 +35,16 @@ public abstract class BaseStatementHandler implements StatementHandler{
         this.statement = new Statement();
         this.updateCondition = updateCondition;
         this.sql = updateCondition.getSQL();
+        this.type = type;
+        this.resultSetHandler = new DefaultResultSetHandler();
+        this.parameterHandler = new DefaultParameterHandler();
+    }
+
+    public BaseStatementHandler(Executor executor, QueryCondition queryCondition,Class<?> type){
+        this.executor = executor;
+        this.statement = new Statement();
+        this.queryCondition = queryCondition;
+        this.sql = queryCondition.getSQL();
         this.type = type;
         this.resultSetHandler = new DefaultResultSetHandler();
         this.parameterHandler = new DefaultParameterHandler();

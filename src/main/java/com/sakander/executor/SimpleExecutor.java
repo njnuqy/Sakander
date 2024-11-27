@@ -2,7 +2,7 @@ package com.sakander.executor;
 
 import com.sakander.config.DbSource;
 import com.sakander.session.ResultHandler;
-import com.sakander.statement.*;
+import com.sakander.condition.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -29,7 +29,7 @@ public class SimpleExecutor extends BaseExecutor{
         PreparedStatement pstmt = null;
         try {
             StatementHandler handler = new PreparedStatementHandler(this,condition,condition.getSQL(),type);
-            pstmt = prepareStatement(handler);
+            pstmt = prepareStatement(handler,condition);
             return handler.update(pstmt);
         } finally {
             closeStatement(pstmt);
@@ -73,6 +73,18 @@ public class SimpleExecutor extends BaseExecutor{
         }
     }
 
+    @Override
+    protected <E> List<E> doQuery(QueryCondition condition, Class<?> type) throws SQLException {
+        PreparedStatement pstmt = null;
+        try {
+            StatementHandler handler = new PreparedStatementHandler(this,condition,condition.getSQL(),type);
+            pstmt = prepareStatement(handler,condition);
+            return handler.query(pstmt);
+        }finally {
+            closeStatement(pstmt);
+        }
+    }
+
     protected Connection getConnection(){
         Connection conn = null;
         try {
@@ -83,6 +95,14 @@ public class SimpleExecutor extends BaseExecutor{
         return conn;
     }
 
+    private PreparedStatement prepareStatement(StatementHandler handler,Condition condition) throws SQLException {
+        PreparedStatement statement;
+        Connection connection = getConnection();
+        statement = handler.prepare(connection);
+        handler.newParameterize(statement,condition);
+        return statement;
+    }
+
     private PreparedStatement prepareStatement(StatementHandler handler) throws SQLException {
         PreparedStatement statement;
         Connection connection = getConnection();
@@ -90,6 +110,7 @@ public class SimpleExecutor extends BaseExecutor{
         handler.newParameterize(statement);
         return statement;
     }
+
     protected void closeStatement(PreparedStatement statement){
         if(statement != null){
             try {
@@ -99,6 +120,5 @@ public class SimpleExecutor extends BaseExecutor{
             }
         }
     }
-
 
 }

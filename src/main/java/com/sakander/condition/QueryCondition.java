@@ -1,4 +1,4 @@
-package com.sakander.statement;
+package com.sakander.condition;
 
 import com.sakander.clause.*;
 import lombok.Data;
@@ -19,7 +19,6 @@ public class QueryCondition extends Condition{
     private final Average average;
     private final Join join;
     private final On on;
-    private String SQL;
 
     public QueryCondition(){
         super();

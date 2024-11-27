@@ -1,6 +1,6 @@
 package com.sakander.executor.parameter;
 
-import com.sakander.statement.Statement;
+import com.sakander.condition.Statement;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

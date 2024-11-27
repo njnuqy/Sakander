@@ -4,7 +4,7 @@ import com.sakander.executor.Executor;
 import com.sakander.executor.SimpleExecutor;
 import com.sakander.executor.parameter.DefaultParameterHandler;
 import com.sakander.session.ResultHandler;
-import com.sakander.statement.Statement;
+import com.sakander.condition.Statement;
 import com.sakander.utils.Utils;
 
 import java.util.List;

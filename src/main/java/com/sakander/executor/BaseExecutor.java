@@ -3,9 +3,9 @@ package com.sakander.executor;
 import com.sakander.cache.CacheKey;
 import com.sakander.cache.impl.PerpetualCache;
 import com.sakander.session.ResultHandler;
-import com.sakander.statement.Condition;
-import com.sakander.statement.Statement;
-import com.sakander.statement.UpdateCondition;
+import com.sakander.condition.QueryCondition;
+import com.sakander.condition.Statement;
+import com.sakander.condition.UpdateCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +40,19 @@ public abstract class BaseExecutor implements Executor{
     }
 
     @Override
+    public CacheKey createCacheKey(QueryCondition condition) {
+        CacheKey cacheKey = new CacheKey();
+        cacheKey.update(condition.getSQL());
+        cacheKey.update(condition);
+        return cacheKey;
+    }
+
+    @Override
     public <E> List<E> query(Statement statement, ResultHandler resultHandler,Class<?> type) throws SQLException {
         CacheKey key = createCacheKey(statement);
         return query(statement,resultHandler,key,type);
     }
+
     @SuppressWarnings("unchecked")
     @Override
     public <E> List<E> query(Statement statement, ResultHandler resultHandler, CacheKey cacheKey,Class<?> type) throws SQLException {
@@ -74,6 +83,28 @@ public abstract class BaseExecutor implements Executor{
             return list;
         }
         list = queryFromDatabase(statement,resultHandler,cacheKey,columns);
+        return list;
+    }
+
+    @Override
+    public <E> List<E> query(QueryCondition condition, Class<?> type) throws SQLException {
+        CacheKey cacheKey = createCacheKey(condition);
+        List<E> list = (List<E>) localCache.getObejct(cacheKey);
+        if(list != null){
+            return list;
+        }
+        list = queryFromDatabase(condition,cacheKey,type);
+        return list;
+    }
+
+    private <E> List<E> queryFromDatabase(QueryCondition condition, CacheKey cacheKey, Class<?> type) throws SQLException {
+        List<E> list;
+        try {
+            list = doQuery(condition,type);
+        }finally {
+            localCache.removeObejct(cacheKey);
+        }
+        localCache.putObject(cacheKey,list);
         return list;
     }
 
@@ -119,4 +150,6 @@ public abstract class BaseExecutor implements Executor{
     protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,Class<?> type,String ...columns) throws SQLException;
 
     protected abstract <E> List<E> doQuery(Statement statement, ResultHandler resultHandler,String ...columns) throws SQLException;
+
+    protected abstract <E> List<E> doQuery(QueryCondition condition,Class<?> type) throws SQLException;
 }

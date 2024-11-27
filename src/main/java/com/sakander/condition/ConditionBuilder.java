@@ -1,4 +1,4 @@
-package com.sakander.statement;
+package com.sakander.condition;
 
 
 import com.sakander.executor.parameter.DefaultConditionHandler;

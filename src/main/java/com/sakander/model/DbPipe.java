@@ -1,7 +1,5 @@
 package com.sakander.model;
 
-import com.sakander.statement.Statement;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
