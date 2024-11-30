@@ -1,32 +1,13 @@
 package com.sakander.model;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 import com.sakander.annotations.Id;
 import com.sakander.clause.*;
 import com.sakander.condition.QueryCondition;
-import com.sakander.condition.Statement;
 import com.sakander.condition.UpdateCondition;
 import com.sakander.utils.Utils;
 public class SqlBuilder {
-    public static String getInsertSql(Statement statement,Object object){
-        Field[] fields = object.getClass().getDeclaredFields();
-        StringBuilder insertSql = new StringBuilder();
-        insertSql.append("insert into ").append(statement.getTable().getTableName()).append(" (");
-        for (Field field : fields) {
-            insertSql.append(Utils.getColumnName(field)).append(",");
-        }
-        insertSql.deleteCharAt(insertSql.length()-1);
-        insertSql.append(") values (");
-        for(int i = 0 ; i < fields.length ; i++){
-            insertSql.append("?,");
-        }
-        insertSql.deleteCharAt(insertSql.length()-1);
-        insertSql.append(")");
-        return insertSql.toString();
-    }
-    // TODO 修改为condition
     public static String getInsertSql(UpdateCondition condition){
         Field[] fields = condition.getInsert().getObject().getClass().getDeclaredFields();
         StringBuilder insertSql = new StringBuilder();
@@ -43,47 +24,27 @@ public class SqlBuilder {
         insertSql.append(")");
         return insertSql.toString();
     }
-    public static<E> String getInsertInBatchSql(List<E> elements, Statement statement, Field[] fields){
-        StringBuilder insertInBatchSql = new StringBuilder();
-        insertInBatchSql.append("insert into ").append(statement.getTable().getTableName()).append(" (");
-        for (Field field : fields) {
-            insertInBatchSql.append(Utils.getColumnName(field)).append(",");
-        }
-        insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
-        insertInBatchSql.append(") values ");
-        for(int i = 0 ; i < elements.size() ; i ++){
-            insertInBatchSql.append("(");
-            for(int j = 0 ; j < fields.length ; j++){
-                insertInBatchSql.append("?,");
-            }
-            insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
-            insertInBatchSql.append("),");
-        }
-        insertInBatchSql.deleteCharAt(insertInBatchSql.length()-1);
-        return insertInBatchSql.toString();
-    }
-    public static<E> String getUpdateSql(Statement statement,Object object){
-        Class clazz = object.getClass();
+
+    public static void prepareUpdate(UpdateCondition condition){
+        Object object = condition.getUpdate().getObject();
+        Class<?> clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
         StringBuilder updateSql = new StringBuilder();
-        updateSql.append("update ").append(statement.getTable().getTableName()).append(" set ");
+        updateSql.append("update ").append(condition.getTable().getTableName()).append(" set");
         String idName = "";
-        Object[] params = new Object[fields.length];
+        Object[] params = new Object[fields.length + 1];
         int index = 0; // 记录参数的位置
         for(int i = 0 ; i < fields.length ; i++){
             Field field = fields[i];
             field.setAccessible(true);
-            // 找到id对应的列值和名
+            //找到id对应的列值和名
             if(field.isAnnotationPresent(Id.class)){
                 idName = field.getAnnotation(Id.class).name();
                 try {
-                    params[params.length - 1] = field.get(object);
-                    if(params[params.length - 1] == null) {
-                        throw new RuntimeException(object + "没有Id属性");
-                    }
+                    params[fields.length] = field.get(object);
                 }catch (IllegalAccessException e){
                     System.out.println(e.getMessage());
-                    System.out.println("获取" + object + "属性值失败");
+                    System.out.println("获取" +  object + "的属性值失败");
                 }
             }
             String columnName = Utils.getColumnName(fields[i]);
@@ -95,73 +56,43 @@ public class SqlBuilder {
                 System.out.println("获取" +  object + "的属性值失败");
             }
         }
+        if(idName.isEmpty()){
+            throw new RuntimeException(object + "没有Id属性");
+        }
+        condition.setParameters(params);
         updateSql.deleteCharAt(updateSql.length() - 1);
         updateSql.append("where ").append(idName).append(" = ?");
-        System.out.println(updateSql.toString());
-        return updateSql.toString();
+        condition.setSQL(updateSql.toString());
     }
-
-    public static String getSelectSql(Statement statement){
-        StringBuilder sql = new StringBuilder("select * " + " from " + statement.getTable().getTableName() + " " +
-                statement.getWhere().getQuery());
-        return buildSql(sql,statement).toString();
-    }
-
     public static String getSelectSql(QueryCondition condition){
         StringBuilder sql = new StringBuilder("select * " + " from " + condition.getTable().getTableName() + " " +
                 condition.getWhere().getQuery());
         return buildSql(sql,condition).toString();
     }
-
-    public static String getSelectWithColumnsSql(Statement statement,String ...columns){
-        StringBuilder sql = new StringBuilder();
-        sql.append("select ");
-        for (String column : columns) {
-            sql.append(column).append(",");
+    public static void prepareDelete(UpdateCondition condition){
+        StringBuilder deleteSql = new StringBuilder();
+        deleteSql.append("delete from ").append(condition.getTable().getTableName()).append(" where ");
+        Object object = condition.getDelete().getObject();
+        Field[] fields = object.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if(field.isAnnotationPresent(Id.class)){{
+                field.setAccessible(true);
+                deleteSql.append(Utils.getColumnName(field)).append(" = ?");
+                try {
+                    condition.setParameters(new Object[]{field.get(object)});
+                }catch (IllegalAccessException e){
+                    System.out.println(e.getMessage());
+                    System.out.println("获取" +  object + "的属性值失败");
+                }
+                break;
+            }}
         }
-        sql.deleteCharAt(sql.length()-1);
-        sql.append(" from ").append(statement.getTable().getTableName());
-        sql.append(" ").append(statement.getWhere().getQuery());
-        return buildSql(sql,statement).toString();
-    }
-    public static String getSelectWithJoinSql(Statement statement){
-        StringBuilder sql = new StringBuilder();
-        sql.append("select * from ").append(statement.getTable().getTableName()).append(" ");
-        sql.append(statement.getJoin().getDirection()).append(" join ").append(statement.getJoin().getTable()).append(" on ");
-        for(String on : statement.getOn().getOns()){
-            sql.append(on).append(",");
-        }
-        sql.deleteCharAt(sql.length()-1).append(" ");
-        sql.append(statement.getWhere().getQuery());
-        return sql.toString();
-    }
-    public static String getDeleteSql(Statement statement){
-        return "delete " + " from " + statement.getTable().getTableName() +
-                statement.getWhere().getQuery();
+        condition.setSQL(deleteSql.toString());
     }
     public static StringBuilder buildSql(StringBuilder sql,QueryCondition condition){
         RowRestriction rowRestriction = condition.getRowRestriction();
         GroupBy groupBy = condition.getGroupBy();
         Having having = condition.getHaving();
-        if(groupBy.getParams() != null){
-            sql.append(" group by ");
-            for (Object param : groupBy.getParams()) {
-                sql.append(param).append(",");
-            }
-            sql.deleteCharAt(sql.length()-1);
-        }
-        if(having.getQuery() != null){
-            sql.append(" having ").append(having.getQuery());
-        }
-        sql.append(" limit ").append(rowRestriction.getLimit());
-        sql.append(" offset ").append(rowRestriction.getOffset());
-        return sql;
-    }
-
-    public static StringBuilder buildSql(StringBuilder sql,Statement statement){
-        RowRestriction rowRestriction = statement.getRowRestriction();
-        GroupBy groupBy = statement.getGroupBy();
-        Having having = statement.getHaving();
         if(groupBy.getParams() != null){
             sql.append(" group by ");
             for (Object param : groupBy.getParams()) {

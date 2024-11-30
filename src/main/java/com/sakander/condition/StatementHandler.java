@@ -12,9 +12,7 @@ public interface StatementHandler {
 
     void parameterize(PreparedStatement pstmt) throws SQLException;
 
-    void newParameterize(PreparedStatement pstmt) throws SQLException;
-
-    void newParameterize(PreparedStatement pstmt,Condition condition) throws SQLException;
+    void parameterize(PreparedStatement pstmt,Condition condition) throws SQLException;
 
     int update(PreparedStatement statement) throws SQLException;
 

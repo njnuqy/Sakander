@@ -2,139 +2,100 @@ package com.sakander.model;
 
 import com.sakander.executor.Executor;
 import com.sakander.executor.SimpleExecutor;
-import com.sakander.executor.parameter.DefaultParameterHandler;
-import com.sakander.session.ResultHandler;
-import com.sakander.condition.Statement;
+import com.sakander.condition.Condition;
+import com.sakander.condition.QueryCondition;
+import com.sakander.condition.UpdateCondition;
 import com.sakander.utils.Utils;
 
 import java.util.List;
-import java.util.Map;
-
-public class DefaultDbPipe implements DbPipe{
+public class DefaultDbPipe implements DbPipe {
     private final Executor executor;
-    private Statement statement;
-    private final DefaultParameterHandler parameterHandler;
-    private Class<?> type;
-    public DefaultDbPipe(String tableName){
-        this.executor = new SimpleExecutor();
-        this.parameterHandler = new DefaultParameterHandler();
-        statement = new Statement();
-        statement.getTable().setTableName(tableName);
-    }
+    private final Class<?> type;
 
     public DefaultDbPipe(Class<?> clazz){
         this.executor = new SimpleExecutor();
-        this.parameterHandler = new DefaultParameterHandler();
-        statement = new Statement();
         this.type = clazz;
     }
 
     @Override
-    public <T> T selectOne(Class<?> type) {
-        List<T> list = selectList(Executor.NO_RESULT_HANDLER, type);
+    public <T> T selectOne(Condition condition) {
+        condition.getTable().setTableName(Utils.getTableName(type));
+        QueryCondition queryCondition = (QueryCondition) condition;
+        List<T> list = selectList(queryCondition,this.type);
         return list.get(0);
     }
 
     @Override
-    public <T> List<T> selectList(Class<?> type) {
-        List<Object> objects = this.selectList(Executor.NO_RESULT_HANDLER, type);
-        clear();
+    public <T> List<T> selectList(Condition condition) {
+        condition.getTable().setTableName(Utils.getTableName(type));
+        QueryCondition queryCondition = (QueryCondition) condition;
+        condition.getTable().setTableName(Utils.getTableName(type));
+        List<Object> objects = this.selectList(queryCondition,this.type);
         return (List<T>) objects;
     }
 
     @Override
-    public List<Map<String, Object>> selectMapList(Class<?> type,String ...columns) {
-        return selectMapList(Executor.NO_RESULT_HANDLER,type,columns);
-    }
-
-    @Override
-    public List<Map<String, Object>> querySql(String sql,String ...columns) {
-        statement.setSQL(sql);
-        return selectQuerySql(Executor.NO_RESULT_HANDLER,sql,columns);
-    }
-
-    private <E> List<E> selectQuerySql(ResultHandler resultHandler,String sql,String ...columns) {
-        statement.setSQL(sql);
-        try{
-            return executor.query(statement,resultHandler,columns);
-        }catch (Exception e){
-            throw new RuntimeException("Error query database . Cause: " + e,e);
-        }
-    }
-
-    private <E> List<E> selectList(ResultHandler resultHandler,Class<?> type) {
-        String sql = SqlBuilder.getSelectSql(this.statement);
-        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
-        System.out.println(sql);
-        statement.setSQL(sql);
-        statement.setParameters(params);
-        try{
-            return executor.query(statement,resultHandler,type);
-        }catch (Exception e){
-            throw new RuntimeException("Error query database . Cause: " + e,e);
-        }
-    }
-
-
-    private <E> List<E> selectMapList(ResultHandler resultHandler,Class<?> type,String ...columns) {
-        String sql = SqlBuilder.getSelectWithColumnsSql(this.statement,columns);
-        Object[] params = Utils.mergeArrays(this.statement.getWhere().getParams());
-        statement.setSQL(sql);
-        statement.setParameters(params);
-        try{
-            return executor.query(statement,resultHandler,type,columns);
-        }catch (Exception e){
-            throw new RuntimeException("Error query database . Cause: " + e,e);
-        }
-    }
-
-    @Override
-    public int insert(Object object){
-        String sql = SqlBuilder.getInsertSql(statement,object);
-        Object[] params = Utils.getSqlParams(object);
-        statement.setSQL(sql);
+    public int insert(Condition condition){
+        condition.getTable().setTableName(Utils.getTableName(type));
+        UpdateCondition updateCondition = (UpdateCondition) condition;
+        String sql = SqlBuilder.getInsertSql(updateCondition);
+        Object[] params = Utils.getSqlParams(updateCondition.getInsert().getObject());
         for (Object param : params) {
             System.out.println(param);
         }
-        try {
-            return executor.update(statement,object.getClass());
+        updateCondition.setSQL(sql);
+        System.out.println(updateCondition.getSQL());
+        updateCondition.setParameters(params);
+        try{
+            return executor.update(updateCondition,type);
         }catch (Exception e){
-            throw new RuntimeException("Error update database. Cause: " + e,e);
+            throw new RuntimeException("Error query database . Cause: " + e,e);
         }
     }
 
     @Override
-    public int update(Object object){
-        String sql = SqlBuilder.getUpdateSql(statement,object);
-        Object[] params = Utils.getUpdateParams(object);
-        statement.setSQL(sql);
-        statement.setParameters(params);
+    public int update(Condition condition){
+        condition.getTable().setTableName(Utils.getTableName(type));
+        UpdateCondition updateCondition = (UpdateCondition) condition;
+        SqlBuilder.prepareUpdate(updateCondition);
+        System.out.println(updateCondition.getSQL());
+        for (Object parameter : condition.getParameters()) {
+            System.out.println(parameter);
+        }
         try {
-            return executor.update(statement,object.getClass());
+            return executor.update(updateCondition,type);
         }catch (Exception e){
-            throw new RuntimeException("Error update database. Cause: " + e,e);
+            throw new RuntimeException("Error query database . Cause: " + e,e);
         }
     }
 
     @Override
-    public int delete(Object object) {
-        String sql = SqlBuilder.getDeleteSql(statement);
-        Object param = Utils.getIdParam(object);
-        statement.setSQL(sql);
-        statement.setParameters(new Object[]{param});
+    public int delete(Condition condition) {
+        condition.getTable().setTableName(Utils.getTableName(type));
+        UpdateCondition updateCondition = (UpdateCondition) condition;
+        SqlBuilder.prepareDelete(updateCondition);
+        System.out.println(updateCondition.getSQL());
+        for (Object parameter : condition.getParameters()) {
+            System.out.println(parameter);
+        }
         try {
-            return executor.update(statement,object.getClass());
+            return executor.update(updateCondition,type);
         }catch (Exception e){
-            throw new RuntimeException("Error delete database. Cause:" + e,e);
+            throw new RuntimeException("Error query database . Cause: " + e,e);
         }
     }
 
-    public DefaultDbPipe where(String query, Object ...params){
-        parameterHandler.setWhere(statement,query,params);
-        return this;
+    private <E> List<E> selectList(QueryCondition condition,Class<?> type) {
+        String sql = SqlBuilder.getSelectSql(condition);
+        Object[] params = Utils.mergeArrays(condition.getWhere().getParams());
+        System.out.println(sql);
+        condition.setSQL(sql);
+        condition.setParameters(params);
+        try{
+            return executor.query(condition,type);
+        }catch (Exception e){
+            throw new RuntimeException("Error query database . Cause: " + e,e);
+        }
     }
 
-    private void clear(){
-        statement = new Statement(statement.getTable().getTableName());
-    }
 }

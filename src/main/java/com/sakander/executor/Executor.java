@@ -2,7 +2,6 @@ package com.sakander.executor;
 
 import com.sakander.cache.CacheKey;
 import com.sakander.condition.QueryCondition;
-import com.sakander.condition.Statement;
 import com.sakander.session.ResultHandler;
 import com.sakander.condition.UpdateCondition;
 
@@ -12,21 +11,9 @@ import java.util.List;
 public interface Executor {
     ResultHandler NO_RESULT_HANDLER = null;
 
-    int update(Statement statement,Class<?> type) throws SQLException;
-
     int update(UpdateCondition condition, Class<?> type) throws SQLException;
 
-    <E> List<E> query(Statement statement, ResultHandler resultHandler,CacheKey cacheKey,Class<?> type) throws SQLException;
-
-    <E> List<E> query(Statement statement,ResultHandler resultHandler,Class<?> type) throws SQLException;
-
-    <E> List<E> query(Statement statement,ResultHandler resultHandler,Class<?> type,String ...columns) throws SQLException;
-
-    <E> List<E> query(Statement statement,ResultHandler resultHandler,String ...columns) throws SQLException;
-
     <E> List<E> query(QueryCondition condition,Class<?> type) throws SQLException;
-
-    CacheKey createCacheKey(Statement statement);
 
     CacheKey createCacheKey(QueryCondition condition);
 }

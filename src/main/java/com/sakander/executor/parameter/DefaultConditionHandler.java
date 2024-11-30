@@ -1,6 +1,8 @@
 package com.sakander.executor.parameter;
 
+import com.sakander.clause.Delete;
 import com.sakander.clause.Insert;
+import com.sakander.clause.Update;
 import com.sakander.clause.Where;
 import com.sakander.condition.Condition;
 import com.sakander.condition.UpdateCondition;
@@ -26,5 +28,17 @@ public class DefaultConditionHandler implements ConditionHandler{
     public void setInsert(UpdateCondition condition, Object object) {
         Insert insert = new Insert(object);
         condition.setInsert(insert);
+    }
+
+    @Override
+    public void setDelete(UpdateCondition condition,Object object){
+        Delete delete = new Delete(object);
+        condition.setDelete(delete);
+    }
+
+    @Override
+    public void setUpdate(UpdateCondition condition, Object object) {
+        Update update = new Update(object);
+        condition.setUpdate(update);
     }
 }

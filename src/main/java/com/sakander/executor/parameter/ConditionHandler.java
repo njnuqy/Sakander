@@ -12,4 +12,8 @@ public interface ConditionHandler {
     void setWhere(Condition condition, String query, Object ...params);
 
     void setInsert(UpdateCondition condition, Object object);
+
+    void setUpdate(UpdateCondition condition,Object object);
+
+    void setDelete(UpdateCondition condition, Object object);
 }

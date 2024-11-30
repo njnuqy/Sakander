@@ -72,14 +72,12 @@ public class Utils {
             try {
                 params[i] = fields[i].get(object);
             }catch (IllegalAccessException e) {
-                log.info("获取{}的属性值失败", object);
                 log.warn("获取{}的属性值失败", object);
             }
         }
         try {
             params[fields.length] = fields[0].get(object);
         }catch (IllegalAccessException e) {
-            log.info("获取{}的属性值失败", object);
             log.warn("获取{}的属性值失败", object);
         }
         return params;

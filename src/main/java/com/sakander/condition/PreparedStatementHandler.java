@@ -10,12 +10,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PreparedStatementHandler extends BaseStatementHandler{
-
-
-    public PreparedStatementHandler(Executor executor, Statement statement, String sql,Class type) {
-        super(executor,statement,type);
-    }
-
     public PreparedStatementHandler(Executor executor, UpdateCondition condition, String sql,Class type) {
         super(executor,condition,type);
     }
@@ -23,28 +17,19 @@ public class PreparedStatementHandler extends BaseStatementHandler{
     public PreparedStatementHandler(Executor executor, QueryCondition condition, String sql,Class type) {
         super(executor,condition,type);
     }
-
-    public PreparedStatementHandler(Executor executor, Statement statement) {
-        super(executor,statement);
-    }
-
     @Override
     protected PreparedStatement instantiatePreparedStatement(Connection connection) throws SQLException {
         return connection.prepareStatement(sql);
     }
+
     @Override
     public void parameterize(PreparedStatement pstmt) throws SQLException {
-        parameterHandler.setParameters(pstmt,statement.getParameters());
+        conditionHandler.setParameters(pstmt,updateCondition.getParameters());
     }
 
     @Override
-    public void newParameterize(PreparedStatement pstmt) throws SQLException {
-        parameterHandler.setParameters(pstmt,updateCondition.getParameters());
-    }
-
-    @Override
-    public void newParameterize(PreparedStatement pstmt,Condition condition) throws SQLException {
-        parameterHandler.setParameters(pstmt,condition.getParameters());
+    public void parameterize(PreparedStatement pstmt,Condition condition) throws SQLException {
+        conditionHandler.setParameters(pstmt,condition.getParameters());
     }
 
     @Override
