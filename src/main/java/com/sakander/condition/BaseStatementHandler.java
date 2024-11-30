@@ -3,7 +3,6 @@ package com.sakander.condition;
 import com.sakander.executor.Executor;
 import com.sakander.executor.parameter.ConditionHandler;
 import com.sakander.executor.parameter.DefaultConditionHandler;
-import com.sakander.executor.parameter.ParameterHandler;
 import com.sakander.executor.resultset.DefaultResultSetHandler;
 import com.sakander.executor.resultset.ResultSetHandler;
 import com.sakander.expections.ExecutorException;
@@ -20,7 +19,6 @@ public abstract class BaseStatementHandler implements StatementHandler{
     protected final Class<?> type;
     protected final ResultSetHandler resultSetHandler;
     protected final ConditionHandler conditionHandler;
-//    protected final ParameterHandler parameterHandler;
 
     public BaseStatementHandler(Executor executor, UpdateCondition updateCondition,Class<?> type){
         this.executor = executor;
@@ -37,7 +35,6 @@ public abstract class BaseStatementHandler implements StatementHandler{
         this.sql = queryCondition.getSQL();
         this.type = type;
         this.resultSetHandler = new DefaultResultSetHandler();
-//        this.parameterHandler = new DefaultParameterHandler();
         this.conditionHandler = new DefaultConditionHandler();
     }
 

@@ -5,8 +5,6 @@ import com.sakander.executor.result.DefaultResultHandler;
 import com.sakander.executor.type.TypeHandler;
 import com.sakander.mapping.ResultMap;
 import com.sakander.mapping.ResultMapping;
-import com.sakander.reflection.DefaultReflectorFactory;
-import com.sakander.reflection.ReflectorFactory;
 import com.sakander.reflection.factory.DefaultObejctFactory;
 import com.sakander.reflection.factory.ObjectFactory;
 import com.sakander.session.ResultHandler;
@@ -19,13 +17,9 @@ import java.util.List;
 
 public class DefaultResultSetHandler implements ResultSetHandler{
 
-    private final ResultHandler<?> resultHandler;
-    private final ReflectorFactory reflectorFactory;
     private final ObjectFactory objectFactory;
 
     public DefaultResultSetHandler() {
-        this.resultHandler = new DefaultResultHandler();
-        this.reflectorFactory = new DefaultReflectorFactory();
         this.objectFactory = new DefaultObejctFactory();
     }
     // 已经执行过了 execute 方法

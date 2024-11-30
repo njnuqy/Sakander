@@ -48,8 +48,6 @@ public class Utils {
         System.out.println(Utils.toSnakeCase(clazz.getSimpleName()));
         return Utils.toSnakeCase(clazz.getSimpleName());
     }
-
-
     public static Object[] getSqlParams(Object object){
         Field[] fields = object.getClass().getDeclaredFields();
         Object[] params = new Object[fields.length];
@@ -63,39 +61,4 @@ public class Utils {
         }
         return params;
     }
-
-    public static Object[] getUpdateParams(Object object){
-        Field[] fields = object.getClass().getDeclaredFields();
-        Object[] params = new Object[fields.length + 1];
-        for(int i = 0 ; i < fields.length ; i++){
-            fields[i].setAccessible(true);
-            try {
-                params[i] = fields[i].get(object);
-            }catch (IllegalAccessException e) {
-                log.warn("获取{}的属性值失败", object);
-            }
-        }
-        try {
-            params[fields.length] = fields[0].get(object);
-        }catch (IllegalAccessException e) {
-            log.warn("获取{}的属性值失败", object);
-        }
-        return params;
-    }
-
-    public static Object getIdParam(Object object){
-        Field[] fields = object.getClass().getDeclaredFields();
-        for(int i = 0 ; i < fields.length ; i++){
-            fields[i].setAccessible(true);
-            if(fields[i].isAnnotationPresent(Id.class)){
-                try {
-                    return fields[i].get(object);
-                }catch (IllegalAccessException e) {
-                    log.warn("获取{}的属性值失败", object);
-                }
-            }
-        }
-        return null;
-    }
-
 }
