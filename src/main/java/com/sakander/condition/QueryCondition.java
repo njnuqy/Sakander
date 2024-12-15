@@ -7,19 +7,19 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class QueryCondition extends Condition{
-    private final Set set;
-    private final Table table;
-    private final RowRestriction rowRestriction;
-    private final GroupBy groupBy;
-    private final Having having;
-    private final Count count;
-    private final Sum sum;
-    private final Max max;
-    private final Min min;
-    private final Average average;
-    private final Join join;
-    private final On on;
-
+    private Set set;
+    private Table table;
+    private RowRestriction rowRestriction;
+    private GroupBy groupBy;
+    private Having having;
+    private Count count;
+    private Sum sum;
+    private Max max;
+    private Min min;
+    private Average average;
+    private Join join;
+    private On on;
+    private Alias alias;
     public QueryCondition(){
         super();
         this.set = new Set();

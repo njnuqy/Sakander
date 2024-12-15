@@ -10,12 +10,12 @@ public class ConditionBuilder {
     public ConditionBuilder(){
         this.conditionHandler = new DefaultConditionHandler();
     }
-
+    // declare query condition
     public ConditionBuilder query(){
         this.condition = new QueryCondition();
         return this;
     }
-
+    // declare update condition
     public ConditionBuilder update(){
         this.condition = new UpdateCondition();
         return this;
@@ -38,6 +38,16 @@ public class ConditionBuilder {
 
     public ConditionBuilder delete(Object object){
         conditionHandler.setDelete((UpdateCondition) condition,object);
+        return this;
+    }
+
+    public ConditionBuilder join(String direction,String table){
+        conditionHandler.setJoin((QueryCondition) condition,direction,table);
+        return this;
+    }
+
+    public ConditionBuilder on(String ...ons){
+        conditionHandler.setOn((QueryCondition) condition,ons);
         return this;
     }
 

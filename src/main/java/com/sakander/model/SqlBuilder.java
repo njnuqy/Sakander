@@ -1,11 +1,14 @@
 package com.sakander.model;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 
 import com.sakander.annotations.Id;
 import com.sakander.clause.*;
+import com.sakander.clause.Alias;
 import com.sakander.condition.QueryCondition;
 import com.sakander.condition.UpdateCondition;
+import com.sakander.constants.GlobalDbPipe;
 import com.sakander.utils.Utils;
 public class SqlBuilder {
     public static String getInsertSql(UpdateCondition condition){
@@ -67,8 +70,45 @@ public class SqlBuilder {
     public static String getSelectSql(QueryCondition condition){
         StringBuilder sql = new StringBuilder("select * " + " from " + condition.getTable().getTableName() + " " +
                 condition.getWhere().getQuery());
+        condition.setParameters(condition.getWhere().getParams());
         return buildSql(sql,condition).toString();
     }
+
+    /*
+    author:qy
+    time:2024/12/15 3.29 p.m.
+    function:create select map sql
+    */
+
+    public static String getSelectMapSql(QueryCondition condition,Alias alias){
+        StringBuilder sql = new StringBuilder("select ");
+        HashMap<String, String> mapAlias = alias.getAlias();
+        for (Field field : GlobalDbPipe.getClassFromMap(condition.getTable().getTableName().toLowerCase()).getDeclaredFields()) {
+            String columnName = Utils.getColumnName(field);
+            if(mapAlias.get("a." + columnName)!=null){
+                sql.append("a.").append(columnName).append(" as ").append(mapAlias.get("a."+columnName)).append(",");
+            }else{
+                sql.append("a.").append(columnName).append(",");
+            }
+        }
+        for (Field field : GlobalDbPipe.getClassFromMap(condition.getJoin().getTable().toLowerCase()).getDeclaredFields()) {
+            String columnName = Utils.getColumnName(field);
+            if (mapAlias.get("b." + columnName) != null) {
+                sql.append("b.").append(columnName).append(" as ").append(mapAlias.get("b."+columnName)).append(",");
+            } else {
+                sql.append("b.").append(columnName).append(",");
+            }
+        }
+        sql.deleteCharAt(sql.length()-1);
+        sql.append(" from ").append(condition.getTable().getTableName()).append(" a ").append(condition.getJoin().getDirection()).append(" ").append(condition.getJoin().getTable()).append(" b on ");
+        for (String on : condition.getOn().getOns()) {
+            sql.append(on).append(" and ");
+        }
+        sql.delete(sql.length()-4,sql.length());
+        System.out.println(sql);
+        return buildSql(sql,condition).toString();
+    }
+
     public static void prepareDelete(UpdateCondition condition){
         StringBuilder deleteSql = new StringBuilder();
         deleteSql.append("delete from ").append(condition.getTable().getTableName()).append(" where ");

@@ -10,7 +10,10 @@ public class On {
     public On(){
         this.ons = NO_ONS;
     }
-    public On(String[] ons){
+    public On(String ...ons){
+        for(int i = 0 ; i < ons.length ; i++){
+            ons[i] = ons[i].replaceAll("\\b(\\w+)\\b\\s*=\\s*\\b\\1\\b", "a.$1 = b.$1");
+        }
         this.ons = ons;
     }
 }

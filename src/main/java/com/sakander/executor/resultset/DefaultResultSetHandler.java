@@ -8,6 +8,7 @@ import com.sakander.mapping.ResultMapping;
 import com.sakander.reflection.factory.DefaultObejctFactory;
 import com.sakander.reflection.factory.ObjectFactory;
 import com.sakander.session.ResultHandler;
+import sun.misc.Unsafe;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +23,8 @@ public class DefaultResultSetHandler implements ResultSetHandler{
     public DefaultResultSetHandler() {
         this.objectFactory = new DefaultObejctFactory();
     }
-    // 已经执行过了 execute 方法
+
+    // 第一步调用
     @Override
     public List<Object> handleResultSets(PreparedStatement pstmt, ResultMap resultMap) throws SQLException {
         final List<Object> multipleResults = new ArrayList<>();
@@ -31,18 +33,20 @@ public class DefaultResultSetHandler implements ResultSetHandler{
         return collapseSingleResultList(multipleResults);
     }
 
+    // 第二步调用
     private void handleResultSet(ResultSetWrapper rsw, ResultMap resultMap,List<Object> multipleResults) throws SQLException {
         DefaultResultHandler defaultResultHandler = new DefaultResultHandler(objectFactory);
         handleRowValues(rsw, resultMap, defaultResultHandler);
         multipleResults.add(defaultResultHandler.getResultList());
     }
 
+    // 第三步调用
     public void handleRowValues(ResultSetWrapper rsw,ResultMap resultMap,ResultHandler<?> resultHandler) throws SQLException {
         handleRowValuesForSimpleResultMap(rsw,resultMap,resultHandler);
         closeResultSet(rsw.getResultSet());
     }
 
-    // 处理简单结果集
+    // 第四步调用：处理简单结果集
     private void handleRowValuesForSimpleResultMap(ResultSetWrapper rsw,ResultMap resultMap,ResultHandler<?> resultHandler) throws SQLException {
         DefaultResultContext<Object> resultContext = new DefaultResultContext<>();
         ResultSet resultSet = rsw.getResultSet();
@@ -62,15 +66,9 @@ public class DefaultResultSetHandler implements ResultSetHandler{
         ((ResultHandler<Object>) resultHandler).handleResult(resultContext);
     }
 
-
+    // 第五步调用
     private Object getRowValue(ResultSetWrapper rsw,ResultMap resultMap){
-        Object rowValue = createResultObject(rsw,resultMap);
-        return rowValue;
-    }
-
-    private Object createResultObject(ResultSetWrapper rsw,ResultMap resultMap){
         final Class<?> resultType = resultMap.getType();
-
         return createParameterizedResultObject(rsw,resultType,resultMap.getConstructorResultMappings());
     }
 

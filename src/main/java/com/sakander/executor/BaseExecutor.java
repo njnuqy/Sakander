@@ -44,6 +44,17 @@ public abstract class BaseExecutor implements Executor{
         return list;
     }
 
+    @Override
+    public <E> List<E> queryMap(QueryCondition condition, Class<?> type) throws SQLException {
+        CacheKey cacheKey = createCacheKey(condition);
+        List<E> list = (List<E>) localCache.getObejct(cacheKey);
+        if(list != null){
+            return list;
+        }
+        list = queryMapFromDatabase(condition,cacheKey,type);
+        return list;
+    }
+
     private <E> List<E> queryFromDatabase(QueryCondition condition, CacheKey cacheKey, Class<?> type) throws SQLException {
         List<E> list;
         try {
@@ -55,7 +66,20 @@ public abstract class BaseExecutor implements Executor{
         return list;
     }
 
+    private <E> List<E> queryMapFromDatabase(QueryCondition condition, CacheKey cacheKey, Class<?> type) throws SQLException {
+        List<E> list;
+        try {
+            list = doQueryMap(condition,type);
+        }finally {
+            localCache.removeObejct(cacheKey);
+        }
+        localCache.putObject(cacheKey,list);
+        return list;
+    }
+
     protected abstract int doUpdate(UpdateCondition condition,Class<?> type) throws SQLException;
 
     protected abstract <E> List<E> doQuery(QueryCondition condition,Class<?> type) throws SQLException;
+
+    protected abstract <E> List<E> doQueryMap(QueryCondition condition,Class<?> type) throws SQLException;
 }

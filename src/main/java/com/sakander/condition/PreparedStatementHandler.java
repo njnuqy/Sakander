@@ -2,7 +2,6 @@ package com.sakander.condition;
 
 import com.sakander.executor.Executor;
 import com.sakander.mapping.ResultMap;
-import com.sakander.session.ResultHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,21 +9,16 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PreparedStatementHandler extends BaseStatementHandler{
-    public PreparedStatementHandler(Executor executor, UpdateCondition condition, String sql,Class type) {
+    public PreparedStatementHandler(Executor executor, UpdateCondition condition,Class type) {
         super(executor,condition,type);
     }
 
-    public PreparedStatementHandler(Executor executor, QueryCondition condition, String sql,Class type) {
+    public PreparedStatementHandler(Executor executor, QueryCondition condition,Class type) {
         super(executor,condition,type);
     }
     @Override
     protected PreparedStatement instantiatePreparedStatement(Connection connection) throws SQLException {
         return connection.prepareStatement(sql);
-    }
-
-    @Override
-    public void parameterize(PreparedStatement pstmt) throws SQLException {
-        conditionHandler.setParameters(pstmt,updateCondition.getParameters());
     }
 
     @Override
@@ -39,28 +33,16 @@ public class PreparedStatementHandler extends BaseStatementHandler{
     }
 
     @Override
-    public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler) throws SQLException {
+    public <E> List<E> query(PreparedStatement pstmt) throws SQLException {
         pstmt.execute();
         ResultMap resultMap = new ResultMap(type);
-        return resultSetHandler.handleResultSets(pstmt,resultMap);
-    }
-
-    public <E> List<E> queryMapList(PreparedStatement pstmt, ResultHandler resultHandler,String ...columns) throws SQLException {
-        pstmt.execute();
-        ResultMap resultMap = new ResultMap(type,columns);
-        return resultSetHandler.handleResultSets(pstmt,resultMap);
-    }
-
-    public <E> List<E> query(PreparedStatement pstmt, ResultHandler resultHandler,String ...columns) throws SQLException {
-        pstmt.execute();
-        ResultMap resultMap = new ResultMap(columns);
         return resultSetHandler.handleResultSets(pstmt,resultMap);
     }
 
     @Override
-    public <E> List<E> query(PreparedStatement pstmt) throws SQLException {
+    public <E> List<E> queryMap(PreparedStatement pstmt,QueryCondition condition) throws SQLException {
         pstmt.execute();
-        ResultMap resultMap = new ResultMap(type);
+        ResultMap resultMap = new ResultMap(type,condition);
         return resultSetHandler.handleResultSets(pstmt,resultMap);
     }
 }

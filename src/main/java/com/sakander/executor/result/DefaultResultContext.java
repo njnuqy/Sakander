@@ -1,6 +1,5 @@
 package com.sakander.executor.result;
 
-import com.sakander.executor.resultset.DefaultResultSetHandler;
 import com.sakander.session.ResultContext;
 
 public class DefaultResultContext<T> implements ResultContext<T> {

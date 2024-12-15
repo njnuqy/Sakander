@@ -1,7 +1,6 @@
 package com.sakander.executor.resultset;
 
 import com.sakander.mapping.ResultMap;
-import com.sakander.session.ResultHandler;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

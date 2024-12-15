@@ -1,5 +1,7 @@
 package com.sakander.model;
 
+import com.sakander.clause.Alias;
+import com.sakander.constants.GlobalDbPipe;
 import com.sakander.executor.Executor;
 import com.sakander.executor.SimpleExecutor;
 import com.sakander.condition.Condition;
@@ -8,6 +10,8 @@ import com.sakander.condition.UpdateCondition;
 import com.sakander.utils.Utils;
 
 import java.util.List;
+import java.util.Map;
+
 public class DefaultDbPipe implements DbPipe {
     private final Executor executor;
     private final Class<?> type;
@@ -15,6 +19,7 @@ public class DefaultDbPipe implements DbPipe {
     public DefaultDbPipe(Class<?> clazz){
         this.executor = new SimpleExecutor();
         this.type = clazz;
+        GlobalDbPipe.addClassToMap(clazz.getSimpleName().toLowerCase(),clazz);
     }
 
     @Override
@@ -29,9 +34,15 @@ public class DefaultDbPipe implements DbPipe {
     public <T> List<T> selectList(Condition condition) {
         condition.getTable().setTableName(Utils.getTableName(type));
         QueryCondition queryCondition = (QueryCondition) condition;
-        condition.getTable().setTableName(Utils.getTableName(type));
         List<Object> objects = this.selectList(queryCondition,this.type);
         return (List<T>) objects;
+    }
+
+    @Override
+    public List<Map<String, Object>> selectMap(Condition condition,Alias alias) {
+        condition.getTable().setTableName(Utils.getTableName(type));
+        QueryCondition queryCondition = (QueryCondition) condition;
+        return this.selectListMap(queryCondition, this.type,alias);
     }
 
     @Override
@@ -87,12 +98,20 @@ public class DefaultDbPipe implements DbPipe {
 
     private <E> List<E> selectList(QueryCondition condition,Class<?> type) {
         String sql = SqlBuilder.getSelectSql(condition);
-        Object[] params = Utils.mergeArrays(condition.getWhere().getParams());
-        System.out.println(sql);
         condition.setSQL(sql);
-        condition.setParameters(params);
         try{
             return executor.query(condition,type);
+        }catch (Exception e){
+            throw new RuntimeException("Error query database . Cause: " + e,e);
+        }
+    }
+
+    private <E> List<E> selectListMap(QueryCondition condition,Class<?> type,Alias alias) {
+        String sql = SqlBuilder.getSelectMapSql(condition,alias);
+        condition.setSQL(sql);
+        condition.setAlias(alias);
+        try{
+            return executor.queryMap(condition,type);
         }catch (Exception e){
             throw new RuntimeException("Error query database . Cause: " + e,e);
         }

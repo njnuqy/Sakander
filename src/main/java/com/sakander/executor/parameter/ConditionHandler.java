@@ -1,6 +1,7 @@
 package com.sakander.executor.parameter;
 
 import com.sakander.condition.Condition;
+import com.sakander.condition.QueryCondition;
 import com.sakander.condition.UpdateCondition;
 
 import java.sql.PreparedStatement;
@@ -16,4 +17,8 @@ public interface ConditionHandler {
     void setUpdate(UpdateCondition condition,Object object);
 
     void setDelete(UpdateCondition condition, Object object);
+
+    void setJoin(QueryCondition condition,String direction,String table);
+
+    void setOn(QueryCondition condition,String ...ons);
 }
